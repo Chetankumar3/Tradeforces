@@ -1,0 +1,13 @@
+{
+  "queue1_keys": {
+    "gcs_url": "source_archive_url",
+    "submission_id": "sub_id",
+    "user_id": "team_id"
+  },
+  "queue2_keys": {
+    "submission_id": "sub_id",
+    "user_id": "team_id",
+    "target_ip": "microvm_internal_ip",
+    "docker_image": "compiled_image_tag"
+  }
+}

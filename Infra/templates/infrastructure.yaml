@@ -1,0 +1,32 @@
+---
+# DEFINE THE KATA RuntimeClass
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: kata-qemu
+handler: kata-qemu
+
+---
+# NGINX DEPLOYMENT WITH Kata RuntimeClass
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-kata-deployment
+  labels:
+    app: nginx-kata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-kata
+  template:
+    metadata:
+      labels:
+        app: nginx-kata
+    spec:
+      runtimeClassName: kata-qemu
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80

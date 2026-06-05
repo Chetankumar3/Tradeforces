@@ -9,8 +9,8 @@ terraform {
 
 provider "google" {
   project = "project-cdd074dc-6291-4d7f-a2a"
-  region  = "us-central1"
-  zone    = "us-central1-a"
+  region  = "us-west1"
+  zone    = "us-west1-a"
 }
 
 # ==========================================
@@ -25,7 +25,7 @@ resource "google_compute_network" "app_vpc" {
 resource "google_compute_subnetwork" "app_subnet" {
   name          = "app-subnet-central1"
   ip_cidr_range = "10.0.1.0/24"
-  region        = "us-central1"
+  region        = "us-west1"
   network       = google_compute_network.app_vpc.id
 }
 
@@ -76,7 +76,7 @@ resource "google_compute_firewall" "allow_public_ingress" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80", "8080"]
+    ports    = ["80", "8080", "5000"]
   }
 
   # Allow from anywhere
@@ -109,7 +109,7 @@ resource "google_compute_firewall" "allow_internal" {
 
 resource "google_storage_bucket" "submissions_bucket" {
   name          = "iicpc-submissions"
-  location      = "us-central1"
+  location      = "us-west1"
   force_destroy = true
 
   uniform_bucket_level_access = true
@@ -126,7 +126,7 @@ resource "google_storage_bucket" "submissions_bucket" {
 
 resource "google_storage_bucket" "app_gcs" {
   name          = "tradeforces-configs"
-  location      = "us-central1"
+  location      = "us-west1"
   force_destroy = true 
   uniform_bucket_level_access = true
 }
@@ -151,7 +151,8 @@ resource "google_storage_bucket_object" "env_file" {
 resource "google_storage_bucket_object" "static_files" {
   for_each = toset([
     "machine-setup.sh",
-    "infrastructure.yaml"
+    "infrastructure.yaml",
+    "gar-key.json"
   ])
 
   name   = each.value
@@ -161,8 +162,8 @@ resource "google_storage_bucket_object" "static_files" {
 
 resource "google_compute_instance" "app_sandbox" {
   name         = "app-gce-01"
-  machine_type = "n2-custom-6-6144" # 6 vCPUs, 6144 MB (6GB) RAM
-  zone         = "us-central1-a"
+  machine_type = "n2-standard-4"
+  zone         = "us-west1-c"
 
   # Network tag maps to the firewall rules above
   tags = ["app-node"]
@@ -190,24 +191,27 @@ resource "google_compute_instance" "app_sandbox" {
 
   metadata_startup_script = replace(<<-EOF
     #!/bin/bash
-      
-    # Log output so you can debug via 'cat /var/log/startup-script.log'
+
     exec > /var/log/startup-script.log 2>&1
 
-    mkdir -p /myapp
-    cd /myapp
+    mkdir -p /root/myapp
+    cd /root/myapp
 
     echo "Waiting for apt lock..."
     while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
       sleep 2
     done
 
-    sudo apt-get update
-    sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release nano unzip
+    apt-get update
+    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release nano unzip
 
     gcloud storage cp -r gs://tradeforces-configs/* .
-    sudo chmod +x machine-setup.sh
+
+    chmod +x machine-setup.sh
     ./machine-setup.sh
+
+    sudo k3s kubectl create secret docker-registry gar-secret --docker-server=us-central1-docker.pkg.dev --docker-username=_json_key --docker-password="$(cat gar-key.json)" --docker-email=not-used@example.com
+    
   EOF
   , "\r", "")
 
@@ -231,7 +235,7 @@ resource "google_compute_instance" "app_sandbox" {
 resource "google_sql_database_instance" "app_db" {
   name             = "app-postgres-6291"
   database_version = "POSTGRES_15"
-  region           = "us-central1"
+  region           = "us-west1"
 
   settings {
     tier              = "db-custom-2-4096" 
@@ -240,9 +244,8 @@ resource "google_sql_database_instance" "app_db" {
     disk_size = 15
     
     ip_configuration {
-      # ipv4_enabled    = false
+      ipv4_enabled    = true
       private_network = google_compute_network.app_vpc.id
-      access_config {} # for public IP
     }
 
     backup_configuration {

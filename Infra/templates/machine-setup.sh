@@ -26,14 +26,14 @@ cd /tmp
 wget -q "https://github.com/kata-containers/kata-containers/releases/download/${KATA_VERSION}/kata-static-${KATA_VERSION}-amd64.tar.xz"
 tar -xJf "kata-static-${KATA_VERSION}-amd64.tar.xz" -C /
 # Create global symlinks
-sudo ln -sf /opt/kata/bin/* /usr/local/bin/
+ln -sf /opt/kata/bin/* /usr/local/bin/
 echo "--> Verifying Kata Runtime..."
-sudo /usr/local/bin/kata-runtime check
+/usr/local/bin/kata-runtime check
 
 
 echo "--> Installing K3s (${K3S_VERSION})..."
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K3S_VERSION} sh -
-sudo kubectl create configmap app-env --from-env-file=/myapp/.env --dry-run=client -o yaml | sudo kubectl apply -f -
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K3S_VERSION} sh -s - server --cluster-cidr=172.20.0.0/16 --service-cidr=172.21.0.0/16
+kubectl create configmap app-env --from-env-file=/root/myapp/.env --dry-run=client -o yaml | kubectl apply -f -
 
 
 echo "--> Waiting for K3s to generate default containerd config..."
@@ -41,16 +41,16 @@ while [ ! -f "${CONTAINERD_DIR}/config.toml" ]; do
     sleep 2
 done
 echo "--> Creating containerd config template..."
-sudo cp "${CONTAINERD_DIR}/config.toml" "${CONTAINERD_DIR}/config.toml.tmpl"
+cp "${CONTAINERD_DIR}/config.toml" "${CONTAINERD_DIR}/config.toml.tmpl"
 # Append Kata configuration if it doesn't already exist in the file
-if ! sudo grep -q "kata-qemu" "${CONTAINERD_DIR}/config.toml.tmpl"; then
-sudo cat <<EOF >> "${CONTAINERD_DIR}/config.toml.tmpl"
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-qemu]
+if ! grep -q "kata-qemu" "${CONTAINERD_DIR}/config.toml.tmpl"; then
+cat <<EOF >> "${CONTAINERD_DIR}/config.toml.tmpl"
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.kata-qemu]
   runtime_type = "io.containerd.kata.v2"
   privileged_without_host_devices = true
   pod_annotations = ["io.katacontainers.*"]
   
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-qemu.options]
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.kata-qemu.options]
   ConfigPath = "/opt/kata/share/defaults/kata-containers/configuration-qemu.toml"
 EOF
     echo "Kata configuration appended to template."
@@ -65,8 +65,8 @@ systemctl restart k3s
 # Wait for containerd to reload
 sleep 5 
 
-echo "--> Verifying Containerd Plumbing..."
-if sudo crictl info | grep -q "kata-qemu"; then
+echo "--> Verifying Containerd-kata Plumbing..."
+if crictl info | grep -q "kata-qemu"; then
     echo "Containerd successfully loaded kata-qemu runtime."
 else
     echo "ERROR: Containerd plumbing failed. kata-qemu not found in crictl info."
@@ -75,10 +75,10 @@ fi
 
 
 echo "--> Applying infrastructure to k3s cluster..."
-sudo kubectl apply -f /myapp/infrastructure.yaml
+kubectl apply -f /root/myapp/infrastructure.yaml
 
 echo "=========================================="
 echo "Setup Complete! Cluster is ready for MicroVMs."
-echo "Kata version: $(sudo kata-runtime --version | head -n 1)"
-echo "K3s version: $(sudo k3s --version | head -n 1)"
+echo "Kata version: $(kata-runtime --version | head -n 1)"
+echo "K3s version: $(k3s --version | head -n 1)"
 echo "=========================================="

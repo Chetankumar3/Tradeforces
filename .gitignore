@@ -16,15 +16,8 @@ backend/.env
 .env.*
 
 # Infra
-userlist.txt
-.github/workflows/Infra_and_Automation/Terraform/*
-!.github/workflows/Infra_and_Automation/Terraform/Terraform.tf
-!.github/workflows/Infra_and_Automation/Terraform/templates/
-!.github/workflows/Infra_and_Automation/Terraform/templates/**
-.github/workflows/Infra_and_Automation/Terraform/templates/env.tpl
-.github/workflows/Infra_and_Automation/Terraform/templates/pgbouncer.tpl
-.github/workflows/Infra_and_Automation/Terraform/templates/userlist.txt
-.terraform/
+env.tpl
+gar-key.json
 
 # Local .terraform directories
 **/.terraform/*

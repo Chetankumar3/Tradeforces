@@ -6,7 +6,7 @@ import logging
 from typing import Optional, Dict, Any
 import google.auth
 from google.cloud import pubsub_v1
-from google.cloud import cloudbuild_v1
+from google.cloud.devtools import cloudbuild_v1
 from google.cloud import storage
 from kubernetes import client, config, watch
 from sqlalchemy.ext.asyncio import AsyncSession

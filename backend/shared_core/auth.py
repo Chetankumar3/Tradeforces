@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 JWT_SECRET = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
 JWT_ALGORITHM = "HS256"
@@ -35,7 +35,7 @@ def decode_jwt_token(token: str) -> Optional[int]:
         return None
 
 
-async def get_current_user(credentials: HTTPAuthCredentials = Depends(security)) -> int:
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> int:
     """Dependency to get current authenticated user."""
     token = credentials.credentials
     user_id = decode_jwt_token(token)

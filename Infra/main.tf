@@ -32,14 +32,22 @@ resource "google_compute_subnetwork" "app_subnet" {
 # ==========================================
 # Private IP Reservation
 # ==========================================
+# Required for Private IP Google Services (Postgres, Pub/Sub)
+resource "google_compute_global_address" "private_ip_alloc" {
+  name          = "private-ip-alloc"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.app_vpc.id
+}
 
-resource "google_compute_address" "app_internal_ip" {
-  name         = "app-gce-internal-ip"
-  subnetwork   = google_compute_subnetwork.app_subnet.id
-  address_type = "INTERNAL"
-  region       = "us-central1"
-  # You can optionally hardcode an IP by uncommenting the line below:
-  # address      = "10.0.1.10" 
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.app_vpc.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_alloc.name]
+  update_on_creation_fail = true
+
+  deletion_policy = "ABANDON"
 }
 
 # ==========================================
@@ -116,11 +124,28 @@ resource "google_storage_bucket" "submissions_bucket" {
   }
 }
 
-resource "google_storage_bucket" "tfapp_gcs" {
+resource "google_storage_bucket" "app_gcs" {
   name          = "tradeforces-configs"
   location      = "us-central1"
   force_destroy = true 
   uniform_bucket_level_access = true
+}
+
+resource "google_storage_bucket_object" "env_file" {
+  name   = ".env"
+  bucket = google_storage_bucket.app_gcs.name
+  
+  content = templatefile("${path.module}/templates/env.tpl", {
+    gcs_bucket_name = google_storage_bucket.submissions_bucket.name
+    queue1_name = google_pubsub_topic.queue1_submissions.name
+    queue1_subscription_name = google_pubsub_subscription.queue1_pull_sub.name
+    queue2_name = google_pubsub_topic.queue2_microvms.name
+    queue2_subscription_name = google_pubsub_subscription.queue2_pull_sub.name
+    db_private_ip = google_sql_database_instance.app_db.ip_address.0.ip_address
+    db_name = google_sql_database.app_db_database.name
+    db_user = google_sql_user.db_user.name
+    db_password = google_sql_user.db_user.password
+  })
 }
 
 resource "google_storage_bucket_object" "static_files" {
@@ -130,7 +155,7 @@ resource "google_storage_bucket_object" "static_files" {
   ])
 
   name   = each.value
-  bucket = google_storage_bucket.tfapp_gcs.name
+  bucket = google_storage_bucket.app_gcs.name
   source = "${path.module}/templates/${each.value}" 
 }
 
@@ -142,7 +167,7 @@ resource "google_compute_instance" "app_sandbox" {
   # Network tag maps to the firewall rules above
   tags = ["app-node"]
 
-  # Allows Firecracker to use KVM
+  # Allows Hardware virtualization
   advanced_machine_features {
     enable_nested_virtualization = true
   }
@@ -158,11 +183,6 @@ resource "google_compute_instance" "app_sandbox" {
   network_interface {
     network    = google_compute_network.app_vpc.id
     subnetwork = google_compute_subnetwork.app_subnet.id
-    
-    # Attach the reserved private internal IP
-    network_ip = google_compute_address.app_internal_ip.address
-    
-    # This block assigns an ephemeral public IP so you can SSH into it from the internet
     access_config {
       // Ephemeral public IP
     }
@@ -207,7 +227,52 @@ resource "google_compute_instance" "app_sandbox" {
   }
 }
 
-/*
+
+resource "google_sql_database_instance" "app_db" {
+  name             = "app-postgres-6291"
+  database_version = "POSTGRES_15"
+  region           = "us-central1"
+
+  settings {
+    tier              = "db-custom-2-4096" 
+    availability_type = "ZONAL"
+    disk_autoresize = false
+    disk_size = 15
+    
+    ip_configuration {
+      # ipv4_enabled    = false
+      private_network = google_compute_network.app_vpc.id
+      access_config {} # for public IP
+    }
+
+    backup_configuration {
+      enabled = true
+    }
+
+    insights_config {
+      query_insights_enabled  = true
+      query_string_length     = 1024
+      record_application_tags = false
+      record_client_address   = false
+    }
+  }
+
+  deletion_protection = false 
+  depends_on          = [google_service_networking_connection.private_vpc_connection]
+}
+
+resource "google_sql_database" "app_db_database" {
+  name     = "testdb"
+  instance = google_sql_database_instance.app_db.name
+}
+
+resource "google_sql_user" "db_user" {
+  name     = "postgres"
+  instance = google_sql_database_instance.app_db.name
+  password = "Ch92.8%%"
+}
+
+
 resource "google_pubsub_topic" "queue1_submissions" {
   name = "queue1-6291"
 
@@ -238,7 +303,7 @@ resource "google_pubsub_topic" "queue2_microvms" {
 
 resource "google_pubsub_subscription" "queue2_pull_sub" {
   name  = "queue2-6291-subscription"
-  topic = google_pubsub_topic.queue1_submissions.name
+  topic = google_pubsub_topic.queue2_microvms.name
 
   ack_deadline_seconds = 10
 
@@ -250,4 +315,4 @@ resource "google_pubsub_subscription" "queue2_pull_sub" {
     minimum_backoff = "10s"
     maximum_backoff = "600s"
   }
-} */
+}

@@ -7,8 +7,8 @@ echo "Starting Infrastructure Setup: (K3s && containerd) + (Kata && QEMU)"
 echo "=========================================="
 
 # Variables
-KATA_VERSION="3.2.0"
-K3S_VERSION="v1.28.7+k3s1" 
+KATA_VERSION="3.12.0"
+K3S_VERSION="v1.36.1+k3s1" 
 CONTAINERD_DIR="/var/lib/rancher/k3s/agent/etc/containerd"
 KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
 export KUBECONFIG
@@ -33,6 +33,7 @@ sudo /usr/local/bin/kata-runtime check
 
 echo "--> Installing K3s (${K3S_VERSION})..."
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K3S_VERSION} sh -
+sudo kubectl create configmap app-env --from-env-file=/myapp/.env --dry-run=client -o yaml | sudo kubectl apply -f -
 
 
 echo "--> Waiting for K3s to generate default containerd config..."

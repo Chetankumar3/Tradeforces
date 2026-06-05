@@ -1,3 +1,6 @@
+cluster-cidr: "172.20.0.0/16"
+service-cidr: "172.21.0.10"
+
 ---
 # DEFINE THE KATA RuntimeClass
 apiVersion: node.k8s.io/v1
@@ -30,3 +33,58 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
+
+---
+
+# main service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main-deployment
+  labels:
+    app: main
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main
+  template:
+    metadata:
+      labels:
+        app: main
+    spec:
+      containers:
+      - name: main_container
+        image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-main:1.0
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: app-env
+
+---
+# vm_creator service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vm_creator-deployment
+  labels:
+    app: vm_creator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vm_creator
+  template:
+    metadata:
+      labels:
+        app: vm_creator
+    spec:
+      containers:
+      - name: vm_creator_container
+        image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-vmcreator:1.0
+        ports:
+        - containerPort: 8001
+        envFrom:
+        - configMapRef:
+            name: app-env

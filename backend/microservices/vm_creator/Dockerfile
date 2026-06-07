@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
-COPY backend/microservices/vm_creator/requirements.txt .
+COPY microservices/vm_creator/requirements.txt .
 
 # Create virtual environment
 RUN python -m venv /opt/venv
@@ -45,10 +45,10 @@ ENV PATH="/opt/venv/bin:$PATH" \
 RUN useradd -m -u 1000 appuser
 
 # Copy shared core
-COPY backend/shared_core /app/shared_core
+COPY shared_core /app/shared_core
 
 # Copy vm_creator service
-COPY backend/microservices/vm_creator /app/microservices/vm_creator
+COPY microservices/vm_creator /app/microservices/vm_creator
 
 # Change ownership
 RUN chown -R appuser:appuser /app

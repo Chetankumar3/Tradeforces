@@ -6,7 +6,7 @@ WORKDIR /build
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential libpq-dev && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
-COPY backend/microservices/main/requirements.txt .
+COPY microservices/main/requirements.txt .
 
 # Create virtual environment
 RUN python -m venv /opt/venv
@@ -36,10 +36,10 @@ ENV PATH="/opt/venv/bin:$PATH" \
 RUN useradd -m -u 1000 appuser
 
 # Copy shared core
-COPY backend/shared_core /app/shared_core
+COPY shared_core /app/shared_core
 
 # Copy main service
-COPY backend/microservices/main /app/microservices/main
+COPY microservices/main /app/microservices/main
 
 # Change ownership
 RUN chown -R appuser:appuser /app

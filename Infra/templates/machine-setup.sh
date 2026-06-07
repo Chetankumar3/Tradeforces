@@ -75,7 +75,7 @@ fi
 
 
 echo "--> Applying infrastructure to k3s cluster..."
-kubectl apply -f /root/myapp/infrastructure.yaml
+kubectl apply -f /root/myapp/k3s.yaml
 
 echo "=========================================="
 echo "Setup Complete! Cluster is ready for MicroVMs."

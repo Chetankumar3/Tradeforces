@@ -151,7 +151,7 @@ resource "google_storage_bucket_object" "env_file" {
 resource "google_storage_bucket_object" "static_files" {
   for_each = toset([
     "machine-setup.sh",
-    "infrastructure.yaml",
+    "k3s.yaml",
     "gar-key.json"
   ])
 

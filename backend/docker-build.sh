@@ -1,6 +1,6 @@
 #!/bin/bash
 REGISTRY="${1:-us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces}"
-VERSION="${2:-1.0}"
+VERSION="${2:-1.1}"
 
 cd "$(dirname "$0")/.."
 

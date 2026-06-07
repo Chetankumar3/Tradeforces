@@ -88,3 +88,146 @@ class TestHealthCheck:
         response = client.get("/health")
         assert response.status_code == 200
         assert response.json()["status"] == "healthy"
+
+class TestRegisterEndpoints:
+    """
+    All tests use db_client: SQLite in-memory, no PostgreSQL needed.
+    Each test method gets a fully isolated, freshly migrated DB.
+    """
+
+    def test_register_success_returns_201_with_token_and_user_id(self, db_client):
+        """Valid registration returns 201 with access_token and user_id."""
+        resp = db_client.post(
+            "/register",
+            json={
+                "username": "newuser",
+                "name":     "New User",
+                "email":    "new@example.com",
+                "password": "securepass123",
+            },
+        )
+        assert resp.status_code == 201
+        data = resp.json()
+        assert "access_token" in data
+        assert "user_id" in data
+        assert isinstance(data["user_id"], int)
+        assert data["token_type"] == "bearer"
+        assert len(data["access_token"]) > 20     # sanity: not an empty string
+
+    def test_register_duplicate_username_returns_409(self, db_client):
+        """Second registration with same username → 409, detail mentions 'username'."""
+        payload = {
+            "username": "dupuser",
+            "name":     "Dup User",
+            "email":    "dup@example.com",
+            "password": "pass123",
+        }
+        first = db_client.post("/register", json=payload)
+        assert first.status_code == 201
+
+        second = db_client.post(
+            "/register",
+            json={**payload, "email": "other@example.com"},  # different email, same username
+        )
+        assert second.status_code == 409
+        assert "username" in second.json()["detail"].lower()
+
+    def test_register_duplicate_email_returns_409(self, db_client):
+        """Second registration with same email → 409, detail mentions 'email'."""
+        payload = {
+            "username": "emailuser",
+            "name":     "Email User",
+            "email":    "emaildup@example.com",
+            "password": "pass123",
+        }
+        first = db_client.post("/register", json=payload)
+        assert first.status_code == 201
+
+        second = db_client.post(
+            "/register",
+            json={**payload, "username": "emailuser2"},  # different username, same email
+        )
+        assert second.status_code == 409
+        assert "email" in second.json()["detail"].lower()
+
+    def test_register_missing_fields_returns_422(self, db_client):
+        """Missing required fields → 422 Unprocessable Entity (Pydantic validation)."""
+        resp = db_client.post("/register", json={"username": "incomplete"})
+        assert resp.status_code == 422
+
+    def test_register_empty_body_returns_422(self, db_client):
+        """Empty body → 422."""
+        resp = db_client.post("/register", json={})
+        assert resp.status_code == 422
+
+    def test_register_token_works_on_protected_route(self, db_client):
+        """Token issued on /register must pass auth on /submit — not 401 or 403."""
+        reg = db_client.post(
+            "/register",
+            json={
+                "username": "tokencheck",
+                "name":     "Token Check",
+                "email":    "tokencheck@example.com",
+                "password": "pass123",
+            },
+        )
+        assert reg.status_code == 201
+
+        token = reg.json()["access_token"]
+        resp = db_client.get(
+            "/submit/1",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        # 401 = token rejected (broken), 403 = no token (also broken)
+        # 500 = GCS not available in test env — acceptable
+        assert resp.status_code not in [401, 403]
+
+    def test_register_then_login_succeeds(self, db_client):
+        """A registered user can log in via /login/credentials."""
+        creds = {
+            "username": "loginafterreg",
+            "name":     "Login After Reg",
+            "email":    "loginafterreg@example.com",
+            "password": "mypassword",
+        }
+        reg = db_client.post("/register", json=creds)
+        assert reg.status_code == 201
+
+        login = db_client.post(
+            "/login/credentials",
+            json={"username": creds["username"], "password": creds["password"]},
+        )
+        assert login.status_code == 200
+        assert "access_token" in login.json()
+
+    def test_wrong_password_after_register_returns_401(self, db_client):
+        """After registration, wrong password → 401."""
+        db_client.post(
+            "/register",
+            json={
+                "username": "wrongpassuser",
+                "name":     "Wrong Pass",
+                "email":    "wrongpass@example.com",
+                "password": "correctpassword",
+            },
+        )
+        login = db_client.post(
+            "/login/credentials",
+            json={"username": "wrongpassuser", "password": "wrongpassword"},
+        )
+        assert login.status_code == 401
+
+    def test_register_returns_different_tokens_for_different_users(self, db_client):
+        """Two distinct users must get distinct tokens."""
+        r1 = db_client.post(
+            "/register",
+            json={"username": "u1", "name": "U1", "email": "u1@x.com", "password": "p"},
+        )
+        r2 = db_client.post(
+            "/register",
+            json={"username": "u2", "name": "U2", "email": "u2@x.com", "password": "p"},
+        )
+        assert r1.status_code == 201
+        assert r2.status_code == 201
+        assert r1.json()["access_token"] != r2.json()["access_token"]
+        assert r1.json()["user_id"] != r2.json()["user_id"]

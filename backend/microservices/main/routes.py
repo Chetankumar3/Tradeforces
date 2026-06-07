@@ -15,8 +15,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from shared_core.DB_models import User, Submission, Base
-from shared_core.auth import create_jwt_token, get_current_user
-from shared_core.schema_mapper import SchemaMapper
+from shared_core.auth import create_jwt_token, get_current_user, hash_password, verify_password_hashfrom shared_core.schema_mapper import SchemaMapper
 from shared_core.core import create_async_db_engine, async_sessionmaker
 from .config import settings
 
@@ -47,6 +46,20 @@ class UploadCompleteRequest(BaseModel):
     """Upload completion request."""
     submission_id: int
 
+class RegisterRequest(BaseModel):
+    """Registration request model."""
+    username: str
+    name: str
+    email: str
+    password: str
+
+
+class RegisterResponse(BaseModel):
+    """Registration response model."""
+    access_token: str
+    token_type: str = "bearer"
+    user_id: int
+
 
 # Helper: Get async session
 async def get_db_session() -> AsyncSession:
@@ -74,12 +87,48 @@ def get_pubsub_publisher():
 
 
 def verify_password(stored_hash: str, password: str) -> bool:
-    """Verify password hash."""
-    # In production, use bcrypt or argon2
-    # For now, simple comparison (NOT recommended for production)
-    return stored_hash == password
+    """Verify password against bcrypt hash."""
+    return verify_password_hash(password, stored_hash)
 
+@router.post("/register", response_model=RegisterResponse, status_code=201)
+async def register(request: RegisterRequest, session: AsyncSession = Depends(get_db_session)):
+    """Register a new user and return a JWT token."""
 
+    # Check username uniqueness
+    result = await session.execute(
+        select(User).where(User.username == request.username)
+    )
+    if result.scalars().first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already taken"
+        )
+
+    # Check email uniqueness
+    result = await session.execute(
+        select(User).where(User.email == request.email)
+    )
+    if result.scalars().first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already registered"
+        )
+
+    # Create user with hashed password
+    user = User(
+        username=request.username,
+        name=request.name,
+        email=request.email,
+        password_hash=hash_password(request.password)
+    )
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+
+    token = create_jwt_token(user.id)
+    return RegisterResponse(access_token=token, user_id=user.id)
+
+    
 @router.post("/login/credentials", response_model=LoginResponse)
 async def login(request: LoginRequest, session: AsyncSession = Depends(get_db_session)):
     """Authenticate user and return JWT token."""

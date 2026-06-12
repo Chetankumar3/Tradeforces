@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: benchmark-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: benchmark-controller
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch","delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: benchmark-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: benchmark-controller
+subjects:
+  - kind: ServiceAccount
+    name: benchmark-controller
+    namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: benchmark-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: benchmark-controller
+  template:
+    metadata:
+      labels:
+        app: benchmark-controller
+    spec:
+      serviceAccountName: benchmark-controller
+      containers:
+        - name: benchmark-controller
+          image: benchmark-controller:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NAMESPACE
+              value: "default"
+            - name: CONTROLLER_URL
+              value: "http://benchmark-controller:8080"
+            - name: RUNNER_PODS
+              value: "3"
+            - name: BOTS_PER_POD
+              value: "100"
+            - name: SCHEDULER_TICK_MS
+              value: "20"
+            - name: START_DELAY_MS
+              value: "5000"
+            - name: GCP_PROJECT_ID
+              value: "project-cdd074dc-6291-4d7f-a2a"
+            - name: PUBSUB_SUBSCRIPTION
+              value: "queue2-6291-subscription"
+            - name: RUNNER_MODE
+              value: "image"
+            - name: RUNNER_IMAGE
+              value: "bot-runner:latest"
+            - name: PHASES_JSON
+              value: '[{"name":"steady","duration_seconds":20,"active_bots":100,"rps":500}]'
+            - name: REDPANDA_BROKERS
+              value: "broker1:9092"
+            - name: REDPANDA_USERNAME
+              value: "rp_user"
+            - name: REDPANDA_PASSWORD
+              value: "rp_123"
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "768Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: benchmark-controller
+spec:
+  selector:
+    app: benchmark-controller
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

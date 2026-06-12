@@ -1,0 +1,5 @@
+/harness
+/logs/
+*.log
+.env
+.env.local

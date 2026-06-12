@@ -14,3 +14,8 @@ Set-Location ../vm_creator
 docker build -t "$registry/tradeforces-vmcreator:$version" -f Dockerfile ../../
 docker push "$registry/tradeforces-vmcreator:$version"
 Write-Host "VM Creator service pushed successfully"
+
+Set-Location ../shadow_engine
+docker build -t "$registry/tradeforces-shadow:$version" -f Dockerfile ../../
+docker push "$registry/tradeforces-shadow:$version"
+Write-Host "Shadow Engine service pushed successfully"

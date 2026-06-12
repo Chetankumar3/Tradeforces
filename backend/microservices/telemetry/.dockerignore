@@ -1,0 +1,6 @@
+logs/
+*.log
+.git/
+.env
+.env.*
+README.md

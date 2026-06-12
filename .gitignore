@@ -65,3 +65,17 @@ frontend/dist/
 # ----------------------
 .DS_Store
 *.db
+
+build/
+logs/
+store/
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+.idea/
+cmake-build-*/
+compile_commands.json
+docs/

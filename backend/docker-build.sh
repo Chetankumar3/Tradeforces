@@ -14,4 +14,8 @@ docker build -t "${REGISTRY}/tradeforces-vmcreator:${VERSION}" -f microservices/
 docker push "${REGISTRY}/tradeforces-vmcreator:${VERSION}"
 echo "VM Creator service pushed successfully"
 
+docker build -t "${REGISTRY}/tradeforces-shadow:${VERSION}" -f microservices/shadow_engine/Dockerfile .
+docker push "${REGISTRY}/tradeforces-shadow:${VERSION}"
+echo "Shadow Engine service pushed successfully"
+
 sudo systemctl stop docker.service docker.socket

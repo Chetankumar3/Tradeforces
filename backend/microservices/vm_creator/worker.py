@@ -59,14 +59,16 @@ class VMCreatorWorker:
         )
     
     def _load_pod_template(self) -> str:
-        """Load Kata microVM Pod template."""
-        template_path = os.path.join(os.path.dirname(__file__), "microvm_pod.tmpl")
+        """Load the multi-resource pod template used for VM creation."""
+        template_path = os.path.join(os.path.dirname(__file__), "create_3_pods.tmpl")
         try:
-            with open(template_path, "r") as f:
+            with open(template_path, "r", encoding="utf-8") as f:
                 return f.read()
         except FileNotFoundError:
-            logger.warning(f"Pod template not found at {template_path}")
-            return self._get_default_pod_template()
+            logger.warning(f"Pod template not found at {template_path}, falling back to legacy template")
+            legacy_template = os.path.join(os.path.dirname(__file__), "microvm_pod.tmpl")
+            with open(legacy_template, "r", encoding="utf-8") as f:
+                return f.read()
     
     def _get_default_pod_template(self) -> str:
         """Get default Pod template if file not found."""
@@ -170,39 +172,65 @@ spec:
         submission_id: int,
         user_id: int,
         docker_image: str
-    ) -> str:
-        """Deploy Kata microVM Pod and return Pod IP."""
-        logger.info(f"Deploying Pod for submission {submission_id}")
-        
-        # Render Pod template
+    ) -> Dict[str, Any]:
+        """Deploy the microVM pod and the telemetry/shadow deployments on the same node."""
+        logger.info(f"Deploying VM resources for submission {submission_id}")
+
+        import yaml
+
         template = Template(self.pod_template)
-        pod_yaml = template.render(
+        rendered_manifest = template.render(
             submission_id=submission_id,
             user_id=user_id,
             docker_image=docker_image,
-            namespace=settings.k3s_namespace
+            namespace=settings.k3s_namespace,
+            node_name=""
         )
-        
-        # Parse YAML and create Pod
-        import yaml
-        pod_dict = yaml.safe_load(pod_yaml)
-        
+
+        resources = list(yaml.safe_load_all(rendered_manifest))
+        if not resources:
+            raise ValueError("No Kubernetes resources were rendered from the template")
+
+        microvm_manifest = resources[0]
         pod = self.k8s_client.create_namespaced_pod(
             namespace=settings.k3s_namespace,
-            body=pod_dict
+            body=microvm_manifest
         )
-        logger.info(f"Pod created: {pod.metadata.name}")
-        
-        # Watch Pod until Running
-        pod_ip = await self._wait_for_pod_running(submission_id)
-        
-        return pod_ip
+        logger.info(f"MicroVM pod created: {pod.metadata.name}")
+
+        pod_ip = await self._wait_for_pod_running(pod.metadata.name)
+
+        pod_details = self.k8s_client.read_namespaced_pod(
+            name=pod.metadata.name,
+            namespace=settings.k3s_namespace
+        )
+        node_name = pod_details.spec.node_name or pod_details.status.host_ip
+        if not node_name:
+            raise RuntimeError("Unable to resolve the node name for the microVM pod")
+
+        for resource in resources[1:]:
+            if resource.get("kind", "").lower() == "deployment":
+                spec = resource.setdefault("spec", {})
+                template_spec = spec.setdefault("template", {}).setdefault("spec", {})
+                template_spec.setdefault("nodeSelector", {})["kubernetes.io/hostname"] = node_name
+                self.k8s_apps_client.create_namespaced_deployment(
+                    namespace=settings.k3s_namespace,
+                    body=resource
+                )
+                logger.info(f"Created deployment {resource['metadata']['name']} on node {node_name}")
+
+        return {
+            "pod_name": pod.metadata.name,
+            "pod_ip": pod_ip,
+            "node_name": node_name,
+            "telemetry_pod_name": resources[1]['metadata']['name'] if len(resources) > 1 else None,
+            "shadow_pod_name": resources[2]['metadata']['name'] if len(resources) > 2 else None,
+        }
     
-    async def _wait_for_pod_running(self, submission_id: int) -> str:
+    async def _wait_for_pod_running(self, pod_name: str) -> str:
         """Wait for Pod to reach Running phase and extract IP."""
-        logger.info(f"Waiting for Pod {submission_id} to reach Running phase")
+        logger.info(f"Waiting for Pod {pod_name} to reach Running phase")
         
-        pod_name = str(submission_id)
         max_wait = 300  # 5 minutes
         start_time = asyncio.get_event_loop().time()
         
@@ -215,7 +243,7 @@ spec:
                 
                 if pod.status.phase == "Running":
                     pod_ip = pod.status.pod_ip
-                    logger.info(f"Pod {submission_id} is running with IP: {pod_ip}")
+                    logger.info(f"Pod {pod_name} is running with IP: {pod_ip}")
                     return pod_ip
                 
                 if pod.status.phase in ["Failed", "Unknown"]:
@@ -230,21 +258,65 @@ spec:
                 logger.error(f"Error waiting for Pod: {e}")
                 raise
     
+    async def create_redpanda_topic(self, topic_name: str) -> None:
+        """Create the Redpanda topic synchronously for this submission."""
+        if not settings.redpanda_bootstrap_servers:
+            logger.warning("REDPANDA_BOOTSTRAP_SERVERS is not configured; skipping topic creation")
+            return
+
+        try:
+            from kafka import KafkaAdminClient
+            from kafka.admin import NewTopic
+        except ImportError as exc:
+            logger.warning(f"Kafka client dependency is unavailable: {exc}")
+            return
+
+        admin_client = KafkaAdminClient(
+            bootstrap_servers=[server.strip() for server in settings.redpanda_bootstrap_servers.split(',') if server.strip()],
+            client_id="tradeforces-vm-creator",
+            security_protocol="SASL_SSL" if settings.redpanda_sasl_username and settings.redpanda_sasl_password else "SSL",
+            ssl_check_hostname=True,
+            sasl_mechanism=settings.redpanda_sasl_mechanism,
+            sasl_plain_username=settings.redpanda_sasl_username,
+            sasl_plain_password=settings.redpanda_sasl_password,
+        )
+        try:
+            admin_client.create_topics([NewTopic(name=topic_name, num_partitions=1, replication_factor=1)])
+            logger.info(f"Created Redpanda topic {topic_name} with 1 partition")
+        except Exception as exc:
+            logger.warning(f"Skipping Redpanda topic creation for {topic_name}: {exc}")
+        finally:
+            admin_client.close()
+
+    def _queue2_backlog(self) -> int:
+        """Return the current Queue 2 backlog for backpressure monitoring."""
+        try:
+            subscription_path = self.subscriber.subscription_path(self.project_id, settings.queue2_subscription_name)
+            subscription = self.subscriber.get_subscription(request={"subscription": subscription_path})
+            return int(getattr(subscription, "num_messages", 0) or 0)
+        except Exception as exc:
+            logger.warning(f"Unable to read Queue 2 backlog: {exc}")
+            return 0
+
     async def publish_to_queue2(
         self,
         submission_id: int,
         user_id: int,
-        docker_image: str,
-        target_ip: str
+        microvm_pod_name: str,
+        telemetry_pod_name: str,
+        shadow_pod_name: str,
+        topic_name: str,
     ) -> None:
-        """Publish result to Queue 2."""
+        """Publish the updated Queue 2 payload for the submission."""
         logger.info(f"Publishing result for submission {submission_id} to Queue 2")
-        
+
         message_data = {
             "submission_id": submission_id,
             "user_id": user_id,
-            "docker_image": docker_image,
-            "target_ip": target_ip
+            "microvm_pod-name": microvm_pod_name,
+            "telemetry_pod-name": telemetry_pod_name,
+            "shadow_pod-name": shadow_pod_name,
+            "topic_name": topic_name,
         }
         
         # Map using schema
@@ -276,12 +348,23 @@ spec:
             
             # Trigger Cloud Build
             docker_image = await self.trigger_cloud_build(gcs_url, submission_id, user_id)
-            
-            # Deploy Pod
-            target_ip = await self.deploy_pod(submission_id, user_id, docker_image)
-            
-            # Publish to Queue 2
-            await self.publish_to_queue2(submission_id, user_id, docker_image, target_ip)
+
+            # Deploy the VM, telemetry, and shadow resources
+            deployment_info = await self.deploy_pod(submission_id, user_id, docker_image)
+            topic_name = str(submission_id)
+
+            # Create the Redpanda topic synchronously after VM creation succeeds
+            await self.create_redpanda_topic(topic_name)
+
+            # Publish the updated Queue 2 payload
+            await self.publish_to_queue2(
+                submission_id,
+                user_id,
+                deployment_info.get("pod_name"),
+                deployment_info.get("telemetry_pod_name") or "",
+                deployment_info.get("shadow_pod_name") or "",
+                topic_name,
+            )
             
             # Update DB status
             async with self.AsyncSessionLocal() as session:
@@ -327,6 +410,12 @@ spec:
         message: pubsub_v1.types.PubsubMessage
     ) -> None:
         """Callback for received messages."""
+        # Backpressure check: do not pull from queue1 when Queue 2 already exceeds the configured limit
+        if self._queue2_backlog() >= settings.max_queue2_size:
+            logger.warning("Queue 2 is above MAX_QUEUE2_SIZE; deferring message for redelivery")
+            message.nack()
+            return
+
         # Check if we can accept more pending VMs
         if self.curr_pending_microvms >= settings.max_pending_microvms:
             logger.warning("Max pending VMs reached, NACK message for redelivery")

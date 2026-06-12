@@ -56,8 +56,5 @@ RUN chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Expose port
-EXPOSE 8001
-
-# Run application with worker
-CMD ["uvicorn", "microservices.vm_creator.main:app", "--host", "0.0.0.0", "--port", "8001"]
+# Start the worker directly instead of running a server process
+CMD ["python", "-m", "microservices.vm_creator.main"]

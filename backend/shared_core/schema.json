@@ -7,7 +7,9 @@
   "queue2_keys": {
     "submission_id": "sub_id",
     "user_id": "team_id",
-    "target_ip": "microvm_internal_ip",
-    "docker_image": "compiled_image_tag"
+    "microvm_pod-name": "microvm_pod-name",
+    "telemetry_pod-name": "telemetry_pod-name",
+    "shadow_pod-name": "shadow_pod-name",
+    "topic_name": "topic_name"
   }
 }

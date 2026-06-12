@@ -76,44 +76,48 @@ class TestSchemaMapper:
         assert internal_data["user_id"] == 456
     
     def test_queue2_mapping(self):
-        """Test Queue 2 message mapping."""
+        """Test Queue 2 message mapping for the updated worker payload."""
         mapper = SchemaMapper()
-        
+
         internal_data = {
             "submission_id": 123,
             "user_id": 456,
-            "docker_image": "gcr.io/image:latest",
-            "target_ip": "10.0.0.1"
+            "microvm_pod-name": "microvm-pod-123",
+            "telemetry_pod-name": "telemetry-pod-123",
+            "shadow_pod-name": "shadow-pod-123",
+            "topic_name": "123"
         }
-        
+
         mapped = mapper.to_queue2(internal_data)
-        
-        assert "sub_id" in mapped
-        assert "team_id" in mapped
-        assert "compiled_image_tag" in mapped
-        assert "microvm_internal_ip" in mapped
+
         assert mapped["sub_id"] == 123
-        assert mapped["microvm_internal_ip"] == "10.0.0.1"
+        assert mapped["team_id"] == 456
+        assert mapped["microvm_pod-name"] == "microvm-pod-123"
+        assert mapped["telemetry_pod-name"] == "telemetry-pod-123"
+        assert mapped["shadow_pod-name"] == "shadow-pod-123"
+        assert mapped["topic_name"] == "123"
     
     def test_queue2_reverse_mapping(self):
-        """Test reverse mapping from Queue 2."""
+        """Test reverse mapping from Queue 2 using the new fields."""
         mapper = SchemaMapper()
-        
+
         queue2_message = {
             "sub_id": 123,
             "team_id": 456,
-            "compiled_image_tag": "gcr.io/image:latest",
-            "microvm_internal_ip": "10.0.0.1"
+            "microvm_pod-name": "microvm-pod-123",
+            "telemetry_pod-name": "telemetry-pod-123",
+            "shadow_pod-name": "shadow-pod-123",
+            "topic_name": "123"
         }
-        
+
         internal_data = mapper.from_queue2(queue2_message)
-        
-        assert "submission_id" in internal_data
-        assert "user_id" in internal_data
-        assert "docker_image" in internal_data
-        assert "target_ip" in internal_data
+
         assert internal_data["submission_id"] == 123
-        assert internal_data["target_ip"] == "10.0.0.1"
+        assert internal_data["user_id"] == 456
+        assert internal_data["microvm_pod-name"] == "microvm-pod-123"
+        assert internal_data["telemetry_pod-name"] == "telemetry-pod-123"
+        assert internal_data["shadow_pod-name"] == "shadow-pod-123"
+        assert internal_data["topic_name"] == "123"
 
 
 class TestJWTAuth:

@@ -75,6 +75,8 @@ fi
 
 
 echo "--> Applying infrastructure to k3s cluster..."
+kubectl create secret docker-registry gar-secret --docker-server=us-central1-docker.pkg.dev --docker-username=_json_key --docker-password=/root/myapp/gar-key.json --docker-email=not-used@example.com
+kubectl create configmap app-env --from-env-file=/root/myapp/.env
 kubectl apply -f /root/myapp/k3s.yaml
 
 echo "=========================================="

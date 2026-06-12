@@ -23,7 +23,30 @@ class Submission(Base):
     gcs_url: Mapped[str] = mapped_column(String(200))
     status: Mapped[str] = mapped_column(String(20))
     # "uploading", "queued_for_microVM_creation", "queued_for_loadgen_setup", "test_running", "test_completed", "error"
-    correctness_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)  # out of 100
-    tps_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)  # out of 100
-    final_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)  # out of 100
+    ack_latency_p50: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    ack_latency_p90: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    ack_latency_p99: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    exec_latency_p50: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    exec_latency_p90: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    exec_latency_p99: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    correctness_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    max_throughput: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    composite_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True) 
+    error_message: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+class IntermediateScores(Base):
+    __tablename__ = "intermediate_scores"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    submission_id: Mapped[int] = mapped_column(ForeignKey("submission.id"), index=True)
+    time_lapse: Mapped[int] = mapped_column() # in seconds
+    ack_latency_p50: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    ack_latency_p90: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    ack_latency_p99: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    exec_latency_p50: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    exec_latency_p90: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    exec_latency_p99: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    correctness_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    max_throughput: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
+    composite_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True) 
     error_message: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)

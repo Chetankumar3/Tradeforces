@@ -52,7 +52,6 @@ async def health_check():
 @app.get("/metrics")
 async def metrics():
     """Metrics endpoint."""
-    # Could return Prometheus metrics here
     return JSONResponse({
         "service": "vm_creator",
         "status": "running"
@@ -60,5 +59,6 @@ async def metrics():
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    import asyncio
+
+    asyncio.run(run_worker())

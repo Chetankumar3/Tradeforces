@@ -1,5 +1,3 @@
-"""Main FastAPI application."""
-
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
@@ -19,7 +17,20 @@ app = FastAPI(
     title="Tradeforces Main API",
     description="Main API Gateway for submission upload and microVM creation",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    root_path="/main"
+)
+
+origins = [
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(router)

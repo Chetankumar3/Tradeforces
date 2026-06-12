@@ -31,6 +31,40 @@ spec:
         - containerPort: 80
 
 ---
+# SERVICE FOR MAIN DEPLOYMENT
+apiVersion: v1
+kind: Service
+metadata:
+  name: main-service
+spec:
+  selector:
+    app: main  # Must match the labels in your deployment
+  ports:
+  - port: 80           # The port the Service exposes internally
+    targetPort: 8000   # The port your FastAPI container is listening on
+
+---
+# INGRESS TO EXPOSE THE SERVICE
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main-ingress
+  annotations:
+    # Optional: See explanation below regarding stripping the prefix
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2 
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /main
+        pathType: Prefix
+        backend:
+          service:
+            name: main-service
+            port:
+              number: 80
+
+---
 
 # main service
 apiVersion: apps/v1
@@ -83,8 +117,6 @@ spec:
       containers:
       - name: vmcreator-container
         image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-vmcreator:1.1
-        ports:
-        - containerPort: 8001
         envFrom:
         - configMapRef:
             name: app-env

@@ -36,10 +36,10 @@ pid_main=$!
 build_and_push "VM Creator service" "tradeforces-vmcreator" "microservices/vm_creator/Dockerfile" "." &
 pid_vm=$!
 
-build_and_push "Benchmark Controller service" "tradeforces-benchmark-controller" "microservices/loadgen/controller/Dockerfile" "backend/microservices/loadgen/controller" &
+build_and_push "Benchmark Controller service" "tradeforces-benchmark-controller" "microservices/loadgen/controller/Dockerfile" "microservices/loadgen/controller" &
 pid_benchmark=$!
 
-build_and_push "Bot Runner service" "tradeforces-bot-runner" "microservices/loadgen/runner/Dockerfile" "backend/microservices/loadgen/runner" &
+build_and_push "Bot Runner service" "tradeforces-bot-runner" "microservices/loadgen/runner/Dockerfile" "microservices/loadgen/runner" &
 pid_bot_runner=$!
 
 build_and_push "Shadow Engine service" "tradeforces-shadow" "microservices/shadow_engine/Dockerfile" "microservices/shadow_engine" &

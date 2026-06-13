@@ -241,12 +241,20 @@ spec:
                 )
                 logger.info(f"Created deployment {resource['metadata']['name']} on node {node_name}")
 
+        microvm_name = microvm_manifest.get("metadata", {}).get("name") or f"microvm-{submission_id}"
+        telemetry_name = resources[1].get("metadata", {}).get("name") if len(resources) > 1 else f"telemetry-deployment-{submission_id}"
+        shadow_name = resources[2].get("metadata", {}).get("name") if len(resources) > 2 else f"shadow-deployment-{submission_id}"
+
         return {
             "pod_name": pod.metadata.name,
             "pod_ip": pod_ip,
             "node_name": node_name,
-            "telemetry_pod_name": resources[1]['metadata']['name'] if len(resources) > 1 else None,
-            "shadow_pod_name": resources[2]['metadata']['name'] if len(resources) > 2 else None,
+            "microvm_pod_name": pod.metadata.name,
+            "microvm_deployment_name": microvm_name,
+            "telemetry_pod_name": telemetry_name,
+            "telemetry_deployment_name": telemetry_name,
+            "shadow_pod_name": shadow_name,
+            "shadow_deployment_name": shadow_name,
         }
     
     async def _wait_for_pod_running(self, pod_name: str) -> str:
@@ -369,18 +377,18 @@ spec:
         self,
         submission_id: int,
         user_id: int,
-        microvm_pod_name: str,
-        telemetry_pod_name: str,
-        shadow_pod_name: str,
+        microvm_deployment_name: str,
+        telemetry_deployment_name: str,
+        shadow_deployment_name: str,
         topic_name: str,
     ) -> None:
         """Publish the updated Queue 2 payload for the submission."""
         message_data = {
             "submission_id": submission_id,
             "user_id": user_id,
-            "microvm_pod-name": microvm_pod_name,
-            "telemetry_pod-name": telemetry_pod_name,
-            "shadow_pod-name": shadow_pod_name,
+            "microvm_deployment_name": microvm_deployment_name,
+            "telemetry_deployment_name": telemetry_deployment_name,
+            "shadow_deployment_name": shadow_deployment_name,
             "topic_name": topic_name,
         }
 
@@ -432,9 +440,9 @@ spec:
             await self.publish_to_queue2(
                 submission_id,
                 user_id,
-                deployment_info.get("pod_name"),
-                deployment_info.get("telemetry_pod_name") or "",
-                deployment_info.get("shadow_pod_name") or "",
+                deployment_info.get("microvm_deployment_name") or deployment_info.get("pod_name") or "",
+                deployment_info.get("telemetry_deployment_name") or deployment_info.get("telemetry_pod_name") or "",
+                deployment_info.get("shadow_deployment_name") or deployment_info.get("shadow_pod_name") or "",
                 topic_name,
             )
             

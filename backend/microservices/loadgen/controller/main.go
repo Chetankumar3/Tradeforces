@@ -67,9 +67,9 @@ type pubSubJobMessage struct {
 	SubmissionID string `json:"submission_id"`
 	TeamID       string `json:"team_id"`
 	TopicName    string `json:"topic_name"`
-	MicroVMPod   string `json:"microvm_pod_name"`
-	TelemetryPod    string `json:"telemetry_pod_name"`
-	ShadowPod    string `json:"shadow_pod_name"`
+	MicroVMPod   string `json:"microvm_deployment_name"`
+	TelemetryPod string `json:"telemetry_deployment_name"`
+	ShadowPod    string `json:"shadow_deployment_name"`
 }
 
 type readyRequest struct {
@@ -341,7 +341,7 @@ func parseQueueMessage(cfg config, msg *pubsub.Message) (queueJob, error) {
 	payload.TelemetryPod = strings.TrimSpace(payload.TelemetryPod)
 	payload.ShadowPod = strings.TrimSpace(payload.ShadowPod)
 	if payload.SubmissionID == "" || payload.TeamID == "" || payload.TopicName == "" || payload.MicroVMPod == "" || payload.TelemetryPod == "" || payload.ShadowPod == "" {
-		return queueJob{}, errors.New("submission_id, team_id, topic_name, microvm_pod_name, and telemetry_pod_name are required")
+		return queueJob{}, errors.New("submission_id, team_id, topic_name, microvm_deployment_name, telemetry_deployment_name, and shadow_deployment_name are required")
 	}
 
 	return queueJob{
@@ -350,7 +350,7 @@ func parseQueueMessage(cfg config, msg *pubsub.Message) (queueJob, error) {
 		TeamID:       payload.TeamID,
 		TopicName:    payload.TopicName,
 		MicroVMPod:   payload.MicroVMPod,
-		TelemetryPod:    payload.TelemetryPod,
+		TelemetryPod: payload.TelemetryPod,
 		ShadowPod:    payload.ShadowPod,
 	}, nil
 }

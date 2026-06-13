@@ -117,9 +117,9 @@ resource "google_storage_bucket" "submissions_bucket" {
 
   # CORS Policy for frontend
   cors {
-    origin          = ["http://localhost:3000", "https://your-frontend.com"]
+    origin          = ["http://localhost:3000", "http://localhost:5173", "https://your-frontend.com"]
     method          = ["PUT", "OPTIONS"]
-    response_header = ["Content-Type", "Authorization"]
+    response_header = ["Content-Type"]
     max_age_seconds = 3600
   }
 }
@@ -141,7 +141,8 @@ resource "google_storage_bucket_object" "env_file" {
     queue1_subscription_name = google_pubsub_subscription.queue1_pull_sub.name
     queue2_name = google_pubsub_topic.queue2_microvms.name
     queue2_subscription_name = google_pubsub_subscription.queue2_pull_sub.name
-    db_private_ip = google_sql_database_instance.app_db.ip_address.0.ip_address
+    redis_host = google_redis_instance.cache.host
+    db_private_ip = google_sql_database_instance.app_db.private_ip_address
     db_name = google_sql_database.app_db_database.name
     db_user = google_sql_user.db_user.name
     db_password = google_sql_user.db_user.password
@@ -235,6 +236,22 @@ resource "google_compute_instance" "app_sandbox" {
 }
 
 
+# --- Redis (Memorystore) ---
+resource "google_redis_instance" "cache" {
+  name               = "tradeforces-redis"
+  tier               = "STANDARD_HA"
+  memory_size_gb     = 12
+  region             = "us-east1"
+  location_id        = "us-east1-c"
+  authorized_network = google_compute_network.app_vpc.id
+  connect_mode       = "PRIVATE_SERVICE_ACCESS"
+
+  redis_version      = "REDIS_6_X"
+
+  depends_on = [google_service_networking_connection.private_vpc_connection]
+}
+
+
 resource "google_sql_database_instance" "app_db" {
   name             = "app-postgres-6291"
   database_version = "POSTGRES_15"
@@ -249,11 +266,17 @@ resource "google_sql_database_instance" "app_db" {
     ip_configuration {
       ipv4_enabled    = true
       private_network = google_compute_network.app_vpc.id
+      
+      authorized_networks {
+        name = "my-laptop"
+        value = "49.37.242.176"
+      }
     }
 
     backup_configuration {
       enabled = true
     }
+
 
     insights_config {
       query_insights_enabled  = true

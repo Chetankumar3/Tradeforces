@@ -1,4 +1,6 @@
 {
+  "submission_id":       "submission_id",
+  "team_id":             "team_id",
   "ack_p50_ns":         "ack_p50_ns",
   "ack_p90_ns":         "ack_p90_ns",
   "ack_p99_ns":         "ack_p99_ns",
@@ -6,6 +8,6 @@
   "exec_p90_ns":        "exec_p90_ns",
   "exec_p99_ns":        "exec_p99_ns",
   "max_throughput_rps": "max_throughput_rps",
-  "correctness_pct":    "correctness_pct",
-  "combined_score":     "combined_score"
+  "correctness_score":    "correctness_score",
+  "composite_score":     "composite_score"
 }

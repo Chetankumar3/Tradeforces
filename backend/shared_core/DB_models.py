@@ -21,7 +21,7 @@ class Submission(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True)
     gcs_url: Mapped[str] = mapped_column(String(200))
-    status: Mapped[str] = mapped_column(String(20))
+    status: Mapped[str] = mapped_column(String(50))
     # "uploading", "queued_for_microVM_creation", "queued_for_loadgen_setup", "test_running", "test_completed", "error"
     ack_latency_p50: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)
     ack_latency_p90: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 6), nullable=True)

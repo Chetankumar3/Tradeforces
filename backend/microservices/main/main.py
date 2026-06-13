@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
+from shared_core.core import init_db
+
 from .routes import router
 
 
@@ -10,6 +12,12 @@ from .routes import router
 async def lifespan(app: FastAPI):
     """Application lifespan."""
     print("Main service starting...")
+    try:
+        await init_db()
+        print("Database schema initialized.")
+    except Exception as exc:
+        print(f"Database initialization failed: {exc}")
+        raise
     yield
     print("Main service shutting down...")
 

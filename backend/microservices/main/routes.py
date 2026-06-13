@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 import google.auth
+from google.auth.transport.requests import Request
 from google.cloud import storage
 from google.cloud import pubsub_v1
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from shared_core.DB_models import User, Submission, Base
 from shared_core.auth import create_jwt_token, get_current_user, hash_password, verify_password_hash
 from shared_core.schema_mapper import SchemaMapper
-from shared_core.core import create_async_db_engine, async_sessionmaker
+from shared_core.core import async_sessionmaker_factory
 from .config import settings
 
 router = APIRouter()
@@ -65,8 +66,7 @@ class RegisterResponse(BaseModel):
 # Helper: Get async session
 async def get_db_session() -> AsyncSession:
     """Get database session."""
-    engine = create_async_db_engine()
-    SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    SessionLocal = async_sessionmaker_factory()
     async with SessionLocal() as session:
         yield session
 
@@ -77,6 +77,23 @@ def get_gcs_client():
         scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
     return storage.Client(project=project_id, credentials=credentials)
+
+
+def generate_upload_signed_url(blob) -> str:
+    """Generate a V4 upload URL using IAM signBlob instead of a private key."""
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    credentials.refresh(Request())
+
+    return blob.generate_signed_url(
+        version="v4",
+        expiration=settings.presigned_url_expiry_minutes * 60,
+        method="PUT",
+        content_type="application/zip",
+        service_account_email=settings.service_account_email,
+        access_token=credentials.token,
+    )
 
 
 def get_pubsub_publisher():
@@ -171,11 +188,7 @@ async def submit(
     bucket = client.bucket(settings.gcs_bucket_name)
     blob = bucket.blob(f"submissions/{user_id}/{submission_id}.zip")
     
-    presigned_url = blob.generate_signed_url(
-        version="v4",
-        expiration=settings.presigned_url_expiry_minutes * 60,
-        method="PUT"
-    )
+    presigned_url = generate_upload_signed_url(blob)
     
     return SubmitResponse(
         presigned_url=presigned_url,
@@ -220,13 +233,16 @@ async def upload_complete(
     }
     
     # Map using schema
+    import json
     queue1_message = schema_mapper.to_queue1(message_data)
     
-    # Publish
-    import json
-    publisher.publish(
+    future = publisher.publish(
         topic_path,
         json.dumps(queue1_message).encode("utf-8")
     )
+    
+    message_id = future.result()
+    print(f"Successfully published to Queue 1. Message ID: {message_id}")
+    print(f"Message content: {queue1_message}")
     
     return {"status": "success", "message": "Submission queued for microVM creation"}

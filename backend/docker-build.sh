@@ -14,7 +14,14 @@ build_and_push() {
   local context="$4"
 
   echo "Starting ${service_name} build/push"
+  local build_args=()
+
+  if [ "$service_name" = "Shadow Engine service" ]; then
+    build_args+=(--build-arg BASE_IMAGE=ubuntu:24.04)
+  fi
+
   docker build --progress=auto \
+    "${build_args[@]}" \
     -t "${REGISTRY}/${image_name}:${VERSION}" \
     -f "${dockerfile}" \
     "${context}"

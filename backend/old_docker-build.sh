@@ -11,7 +11,7 @@ docker build -t "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/trade
 docker push "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-vmcreator:1.1"
 echo "VM Creator service pushed successfully"
 
-docker build -t "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1" -f microservices/shadow_engine/Dockerfile microservices/shadow_engine
+docker build --build-arg BASE_IMAGE=ubuntu:24.04 -t "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1" -f microservices/shadow_engine/Dockerfile microservices/shadow_engine
 docker push "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1"
 echo "Shadow Engine service pushed successfully"
 

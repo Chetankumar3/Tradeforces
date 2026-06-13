@@ -88,6 +88,7 @@ spec:
       containers:
       - name: main-container
         image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-main:1.1
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
         envFrom:
@@ -117,6 +118,7 @@ spec:
       containers:
       - name: vmcreator-container
         image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-vmcreator:1.1
+        imagePullPolicy: Always
         envFrom:
         - configMapRef:
             name: app-env

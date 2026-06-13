@@ -20,7 +20,7 @@ def print_tree(root, stop_at, indent=""):
             print_tree(path, stop_at, indent + extension)
 
 # These folders will show up in the tree, but the script won't look inside them
-stop_folders = {".terraform", "node_modules", "k3s", "env", "venv", ".git", "__pycache__", ".venv", "pytests", ".claude", ".github", "main", "vm_creator", "shared_core", "utils", "tests", "scripts", "docs", "examples", "data", "config", "assets", "static", "templates", ".vscode", ".idea", "shadow_engine", "contestant_engine", "loadgen", "telemetry", "extra_services"}
+stop_folders = {".terraform", "node_modules", "k3s", "env", "venv", ".git", "__pycache__", ".venv", "pytests", "frontend",  ".claude", ".github", "main", "vm_creator", "shared_core", "utils", "tests", "scripts", "docs", "examples", "data", "config", "assets", "static", "templates", ".vscode", ".idea", "shadow_engine", "contestant_engine", "loadgen", "telemetry", "extra_services", ".pytest_cache"}
 # stop_folders = {".terraform", "node_modules", "k3s", "env", "venv", ".git", "__pycache__", ".venv", "pytests", ".claude", ".github"}
 
 if __name__ == "__main__":

@@ -8,7 +8,9 @@ metadata:
     user-id: "{{ user_id }}"
     app: tradeforces-submission
 spec:
-  runtimeClassName: kata
+  imagePullSecrets:
+  - name: gar-secret
+  runtimeClassName: kata-qemu
   restartPolicy: Never
   terminationGracePeriodSeconds: 30
   affinity:

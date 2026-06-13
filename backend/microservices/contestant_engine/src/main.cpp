@@ -3,10 +3,12 @@
 #include "shadow_engine/telemetry_bridge.h"
 #include "utils/logger.h"
 #include "utils/config_loader.h"
+#include <chrono>
 #include <iostream>
 #include <csignal>
 #include <atomic>
 #include <cstdlib>
+#include <thread>
 
 std::atomic<bool> g_running{true};
 
@@ -54,16 +56,17 @@ int main(int argc, char* argv[]) {
         sessionManager.initialize(sessions);
 
         fix_gateway::shadow_engine::TelemetryBridge telemetryBridge;
-        const std::string ingressHost = ::getenv("CONTESTANT_INGRESS_HOST")
-            ? ::getenv("CONTESTANT_INGRESS_HOST") : "0.0.0.0";
+        const char* ingressHostEnv = std::getenv("CONTESTANT_INGRESS_HOST");
+        const char* ingressPortEnv = std::getenv("CONTESTANT_INGRESS_PORT");
+        const char* egressHostEnv = std::getenv("CONTESTANT_EGRESS_HOST");
+        const char* egressPortEnv = std::getenv("CONTESTANT_EGRESS_PORT");
+
+        const std::string ingressHost = ingressHostEnv ? ingressHostEnv : "0.0.0.0";
         const unsigned short ingressPort = static_cast<unsigned short>(
-            std::stoi(::getenv("CONTESTANT_INGRESS_PORT")
-                ? ::getenv("CONTESTANT_INGRESS_PORT") : "9100"));
-        const std::string egressHost = ::getenv("CONTESTANT_EGRESS_HOST")
-            ? ::getenv("CONTESTANT_EGRESS_HOST") : "0.0.0.0";
+            std::stoi(ingressPortEnv ? ingressPortEnv : "9100"));
+        const std::string egressHost = egressHostEnv ? egressHostEnv : "0.0.0.0";
         const unsigned short egressPort = static_cast<unsigned short>(
-            std::stoi(::getenv("CONTESTANT_EGRESS_PORT")
-                ? ::getenv("CONTESTANT_EGRESS_PORT") : "9101"));
+            std::stoi(egressPortEnv ? egressPortEnv : "9101"));
 
         sessionManager.setExecutionReportSink([&telemetryBridge](const fix_engine::FIXMessage& report) {
             telemetryBridge.onExecutionReport(report);

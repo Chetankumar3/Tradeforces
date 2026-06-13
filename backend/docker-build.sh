@@ -36,14 +36,23 @@ pid_main=$!
 build_and_push "VM Creator service" "tradeforces-vmcreator" "microservices/vm_creator/Dockerfile" "." &
 pid_vm=$!
 
+build_and_push "Benchmark Controller service" "tradeforces-benchmark-controller" "microservices/loadgen/controller/Dockerfile" "backend/microservices/loadgen/controller" &
+pid_benchmark=$!
+
+build_and_push "Bot Runner service" "tradeforces-bot-runner" "microservices/loadgen/runner/Dockerfile" "backend/microservices/loadgen/runner" &
+pid_bot_runner=$!
+
 build_and_push "Shadow Engine service" "tradeforces-shadow" "microservices/shadow_engine/Dockerfile" "microservices/shadow_engine" &
 pid_shadow=$!
 
 build_and_push "Telemetry service" "tradeforces-telemetry" "microservices/telemetry/Dockerfile" "microservices/telemetry" &
 pid_telemetry=$!
 
+build_and_push "Contestant Engine service" "tradeforces-contestant" "microservices/contestant_engine/Dockerfile" "microservices/contestant_engine" &
+pid_contestant=$!
+
 status=0
-for pid in "$pid_main" "$pid_vm" "$pid_shadow" "$pid_telemetry"; do
+for pid in "$pid_main" "$pid_vm" "$pid_benchmark" "$pid_bot_runner" "$pid_shadow" "$pid_telemetry" "$pid_contestant"; do
   if ! wait "$pid"; then
     status=1
   fi

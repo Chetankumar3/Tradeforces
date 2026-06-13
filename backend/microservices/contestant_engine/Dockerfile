@@ -1,4 +1,4 @@
-# Multi-stage build for Shadow Engine service
+# Multi-stage build for Contestant Engine service
 ARG BASE_IMAGE=ubuntu:24.04
 
 FROM ${BASE_IMAGE} AS builder
@@ -18,14 +18,23 @@ RUN apt-get update \
         pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
+    
 COPY . /src/contestant_engine
+# (If your CMakeLists.txt relies on shared_core, uncomment the line below)
+# COPY shared_core /src/shared_core
 
-RUN cmake -S /src/contestant_engine -B /build/contestant_engine \
+# FIX 2 & 3: Use cache mounts to save .o files, and limit concurrency to 4
+RUN --mount=type=cache,target=/build/contestant_engine \
+    cmake -S /src/contestant_engine -B /build/contestant_engine \
         -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_TESTS=OFF \
         -DBUILD_BENCHMARKS=OFF \
-    && cmake --build /build/contestant_engine --target fix_gateway -j"$(nproc)"
+    && cmake --build /build/contestant_engine --target fix_gateway -j4
+
+# FIX 4: Stage the binary outside the cache mount before moving to final image
+RUN --mount=type=cache,target=/build/contestant_engine \
+    cp /build/contestant_engine/fix_gateway /build/fix_gateway_binary
 
 FROM ${BASE_IMAGE}
 
@@ -40,7 +49,8 @@ RUN apt-get update \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /build/contestant_engine/fix_gateway /app/fix_gateway
+# FIX 5: Pull staged binary and fix the config context path
+COPY --from=builder /build/fix_gateway_binary /app/fix_gateway
 COPY config /app/config
 
 ENV PATH="/app:$PATH" \

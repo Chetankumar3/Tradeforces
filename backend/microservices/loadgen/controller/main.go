@@ -48,27 +48,27 @@ type config struct {
 	PhasesJSON          string
 
 	// NEW: passed through to runner pods
-	RedpandaBrokers     string
-	RedpandaUsername    string
-	RedpandaPassword    string
+	RedpandaBrokers  string
+	RedpandaUsername string
+	RedpandaPassword string
 }
 
 type queueJob struct {
-    RunID        string
-    SubmissionID string
-    TeamID       string
-    TopicName    string
-    MicroVMPod   string
-    FeederPod    string
-    ShadowPod    string
+	RunID        string
+	SubmissionID string
+	TeamID       string
+	TopicName    string
+	MicroVMPod   string
+	TelemetryPod    string
+	ShadowPod    string
 }
 
 type pubSubJobMessage struct {
-    SubmissionID string `json:"submission_id"`
-    TeamID       string `json:"team_id"`
-    TopicName    string `json:"topic_name"`
-    MicroVMPod   string `json:"microvm_pod_name"`
-    FeederPod    string `json:"telemetry_pod_name"`
+	SubmissionID string `json:"submission_id"`
+	TeamID       string `json:"team_id"`
+	TopicName    string `json:"topic_name"`
+	MicroVMPod   string `json:"microvm_pod_name"`
+	TelemetryPod    string `json:"telemetry_pod_name"`
 	ShadowPod    string `json:"shadow_pod_name"`
 }
 
@@ -338,9 +338,9 @@ func parseQueueMessage(cfg config, msg *pubsub.Message) (queueJob, error) {
 	payload.TeamID = strings.TrimSpace(payload.TeamID)
 	payload.TopicName = strings.TrimSpace(payload.TopicName)
 	payload.MicroVMPod = strings.TrimSpace(payload.MicroVMPod)
-	payload.FeederPod = strings.TrimSpace(payload.FeederPod)
-	payload.ShadowPod=strings.TrimSpace(payload.ShadowPod)
-	if payload.SubmissionID == "" || payload.TeamID == "" || payload.TopicName == "" || payload.MicroVMPod == "" || payload.FeederPod == "" || payload.ShadowPod == "" {
+	payload.TelemetryPod = strings.TrimSpace(payload.TelemetryPod)
+	payload.ShadowPod = strings.TrimSpace(payload.ShadowPod)
+	if payload.SubmissionID == "" || payload.TeamID == "" || payload.TopicName == "" || payload.MicroVMPod == "" || payload.TelemetryPod == "" || payload.ShadowPod == "" {
 		return queueJob{}, errors.New("submission_id, team_id, topic_name, microvm_pod_name, and telemetry_pod_name are required")
 	}
 
@@ -350,7 +350,7 @@ func parseQueueMessage(cfg config, msg *pubsub.Message) (queueJob, error) {
 		TeamID:       payload.TeamID,
 		TopicName:    payload.TopicName,
 		MicroVMPod:   payload.MicroVMPod,
-		FeederPod:    payload.FeederPod,
+		TelemetryPod:    payload.TelemetryPod,
 		ShadowPod:    payload.ShadowPod,
 	}, nil
 }
@@ -401,7 +401,7 @@ func processRun(ctx context.Context, cfg config, client kubernetes.Interface, st
 			state.resultCount(),
 			cfg.RunnerPods,
 		)
-    }
+	}
 
 	state.markStatus("completed")
 
@@ -457,7 +457,7 @@ func waitForAllRunnersReady(ctx context.Context, cfg config, client kubernetes.I
 		} else if failed {
 			return errors.New("runner job failed before all pods became ready")
 		}
-		
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -525,7 +525,7 @@ func buildRunnerJob(cfg config, queued queueJob, topicName string) *batchv1.Job 
 				Spec: corev1.PodSpec{
 					RestartPolicy: corev1.RestartPolicyNever,
 					Containers: []corev1.Container{
-						buildRunnerContainer(cfg, queued,topicName),
+						buildRunnerContainer(cfg, queued, topicName),
 					},
 					Volumes: runnerVolumes(cfg),
 				},
@@ -536,14 +536,14 @@ func buildRunnerJob(cfg config, queued queueJob, topicName string) *batchv1.Job 
 
 func buildRunnerContainer(cfg config, queued queueJob, topicName string) corev1.Container {
 	container := corev1.Container{
-		Name:           "bot-runner",
-		Image:          cfg.RunnerImage,
+		Name:            "bot-runner",
+		Image:           cfg.RunnerImage,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		Env: []corev1.EnvVar{
 			{Name: "RUN_ID", Value: queued.RunID},
-			{Name: "SUBMISSION_ID", Value: queued.SubmissionID}, // NEW
-			{Name: "TOPIC_NAME", Value: topicName},              // NEW
-			{Name: "REDPANDA_BROKERS", Value: cfg.RedpandaBrokers}, // NEW
+			{Name: "SUBMISSION_ID", Value: queued.SubmissionID},      // NEW
+			{Name: "TOPIC_NAME", Value: topicName},                   // NEW
+			{Name: "REDPANDA_BROKERS", Value: cfg.RedpandaBrokers},   // NEW
 			{Name: "REDPANDA_USERNAME", Value: cfg.RedpandaUsername}, // NEW
 			{Name: "REDPANDA_PASSWORD", Value: cfg.RedpandaPassword}, // NEW
 
@@ -633,136 +633,136 @@ func deleteJobIfExists(ctx context.Context, client kubernetes.Interface, namespa
 	}
 	return err
 }
-func deletePodIfExists(
-    ctx context.Context,
-    client kubernetes.Interface,
-    namespace string,
-    podName string,
+func deleteDeploymentIfExists(
+	ctx context.Context,
+	client kubernetes.Interface,
+	namespace string,
+	DeplymentName string,
 ) error {
 
-    propagation := metav1.DeletePropagationForeground
+	propagation := metav1.DeletePropagationForeground
 
-    err := client.CoreV1().
-        Pods(namespace).
-        Delete(
-            ctx,
-            podName,
-            metav1.DeleteOptions{
-                PropagationPolicy: &propagation,
-            },
-        )
+	err := client.AppsV1().
+		Deployments(namespace).
+		Delete(
+			ctx,
+			DeplymentName,
+			metav1.DeleteOptions{
+				PropagationPolicy: &propagation,
+			},
+		)
 
-    if apierrors.IsNotFound(err) {
-        return nil
-    }
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
 
-    return err
+	return err
 }
 func waitForPodDeletion(
-    ctx context.Context,
-    client kubernetes.Interface,
-    namespace string,
-    podName string,
+	ctx context.Context,
+	client kubernetes.Interface,
+	namespace string,
+	podName string,
 ) error {
 
-    ticker := time.NewTicker(time.Second)
-    defer ticker.Stop()
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
 
-    for {
+	for {
 
-        _, err := client.CoreV1().
-            Pods(namespace).
-            Get(
-                ctx,
-                podName,
-                metav1.GetOptions{},
-            )
+		_, err := client.AppsV1().
+			Deployments(namespace).
+			Get(
+				ctx,
+				podName,
+				metav1.GetOptions{},
+			)
 
-        if apierrors.IsNotFound(err) {
-            return nil
-        }
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
 
-        if err != nil {
-            return err
-        }
+		if err != nil {
+			return err
+		}
 
-        select {
-        case <-ctx.Done():
-            return ctx.Err()
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
 
-        case <-ticker.C:
-        }
-    }
+		case <-ticker.C:
+		}
+	}
 }
 func stopBenchmarkPods(
-    ctx context.Context,
-    client kubernetes.Interface,
-    namespace string,
-    queued queueJob,
+	ctx context.Context,
+	client kubernetes.Interface,
+	namespace string,
+	queued queueJob,
 ) error {
 
-    log.Printf(
-        "stopping benchmark pods submission=%s microvm=%s feeder=%s",
-        queued.SubmissionID,
-        queued.MicroVMPod,
-        queued.FeederPod,
-    )
+	log.Printf(
+		"stopping benchmark pods submission=%s microvm=%s telemetry=%s",
+		queued.SubmissionID,
+		queued.MicroVMPod,
+		queued.TelemetryPod,
+	)
 
-    if err := deletePodIfExists(
-        ctx,
-        client,
-        namespace,
-        queued.MicroVMPod,
-    ); err != nil {
-        return fmt.Errorf(
-            "delete microvm pod: %w",
-            err,
-        )
-    }
+	if err := deleteDeploymentIfExists(
+		ctx,
+		client,
+		namespace,
+		queued.MicroVMPod,
+	); err != nil {
+		return fmt.Errorf(
+			"delete microvm pod: %w",
+			err,
+		)
+	}
 
-    if err := deletePodIfExists(
-        ctx,
-        client,
-        namespace,
-        queued.FeederPod,
-    ); err != nil {
-        return fmt.Errorf(
-            "delete feeder pod: %w",
-            err,
-        )
-    }
-	if err := deletePodIfExists(ctx, client, namespace, queued.ShadowPod); err != nil {
-    	return fmt.Errorf("delete shadow pod: %w", err)
-    }
-
-    if err := waitForPodDeletion(
-        ctx,
-        client,
-        namespace,
-        queued.MicroVMPod,
-    ); err != nil {
-        return err
-    }
-
-    if err := waitForPodDeletion(
-        ctx,
-        client,
-        namespace,
-        queued.FeederPod,
-    ); err != nil {
-        return err
-    }
+	if err := deleteDeploymentIfExists(
+		ctx,
+		client,
+		namespace,
+		queued.TelemetryPod,
+	); err != nil {
+		return fmt.Errorf(
+			"delete telemetry pod: %w",
+			err,
+		)
+	}
+	if err := deleteDeploymentIfExists(ctx, client, namespace, queued.ShadowPod); err != nil {
+		return fmt.Errorf("delete shadow pod: %w", err)
+	}
 
 	if err := waitForPodDeletion(
-        ctx,
-        client,
-        namespace,
-        queued.ShadowPod,
-    ); err != nil {
-        return err
-    }
+		ctx,
+		client,
+		namespace,
+		queued.MicroVMPod,
+	); err != nil {
+		return err
+	}
 
-    return nil
+	if err := waitForPodDeletion(
+		ctx,
+		client,
+		namespace,
+		queued.TelemetryPod,
+	); err != nil {
+		return err
+	}
+
+	if err := waitForPodDeletion(
+		ctx,
+		client,
+		namespace,
+		queued.ShadowPod,
+	); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // incluster config gives credentials, cfg has all the credentials, when i talk to api using clientset, _ := kubernetes.NewForConfig(config), the clientset has all the credentails , goes to api server, The API server validates that token's signature and maps it to a ServiceAccount. Authentication is based on the ServiceAccount token, not the pod name itself.
@@ -799,9 +799,9 @@ func loadConfig() (config, error) {
 		RunnerCPULimit:      getenv("RUNNER_CPU_LIMIT", "1"),
 		RunnerMemoryLimit:   getenv("RUNNER_MEMORY_LIMIT", "768Mi"),
 		PhasesJSON:          getenv("PHASES_JSON", `[{"name":"steady","duration_seconds":20,"active_bots":100,"rps":500}]`),
-		RedpandaBrokers:  getenv("REDPANDA_BROKERS", ""),
-		RedpandaUsername: getenv("REDPANDA_USERNAME", ""),
-		RedpandaPassword: getenv("REDPANDA_PASSWORD", ""),
+		RedpandaBrokers:     getenv("REDPANDA_BROKERS", ""),
+		RedpandaUsername:    getenv("REDPANDA_USERNAME", ""),
+		RedpandaPassword:    getenv("REDPANDA_PASSWORD", ""),
 	}
 	if cfg.RedpandaBrokers == "" {
 		return cfg, errors.New("REDPANDA_BROKERS is required")
@@ -829,7 +829,6 @@ func loadConfig() (config, error) {
 
 	return cfg, nil
 }
-
 
 func currentNamespace() string {
 	data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")

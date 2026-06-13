@@ -1,4 +1,5 @@
-FROM golang:1.25-alpine AS build
+# Run from Tradeforces/backend folder
+FROM golang:1.26.3-alpine AS build
 
 WORKDIR /src
 
@@ -6,8 +7,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 go build -o /out/bot-runner ./services/bot-runner
-
+# Changed ./services/bot-runner to .
+RUN CGO_ENABLED=0 go build -o /out/bot-runner .
 
 FROM alpine:3.22
 RUN apk add --no-cache ca-certificates

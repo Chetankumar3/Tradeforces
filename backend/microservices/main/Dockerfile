@@ -1,3 +1,4 @@
+# Run from Tradeforces/backend folder
 # Multi-stage build for Main Service
 FROM python:3.11-slim AS builder
 

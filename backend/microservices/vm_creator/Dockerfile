@@ -1,4 +1,5 @@
 # Multi-stage build for VM Creator Service
+# Run from Tradeforces/backend folder
 FROM python:3.11-slim AS builder
 
 WORKDIR /build

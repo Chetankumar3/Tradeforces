@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/iicpc/harness/internal/fix"
-	"github.com/iicpc/harness/internal/types"
+	"github.com/iicpc/telemetry/internal/fix"
+	"github.com/iicpc/telemetry/internal/types"
 )
 
 // normalize canonicalizes a FIX exec report for cross-engine comparison. It

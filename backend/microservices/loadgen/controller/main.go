@@ -68,7 +68,7 @@ type pubSubJobMessage struct {
     TeamID       string `json:"team_id"`
     TopicName    string `json:"topic_name"`
     MicroVMPod   string `json:"microvm_pod_name"`
-    FeederPod    string `json:"feeder_pod_name"`
+    FeederPod    string `json:"telemetry_pod_name"`
 	ShadowPod    string `json:"shadow_pod_name"`
 }
 
@@ -341,7 +341,7 @@ func parseQueueMessage(cfg config, msg *pubsub.Message) (queueJob, error) {
 	payload.FeederPod = strings.TrimSpace(payload.FeederPod)
 	payload.ShadowPod=strings.TrimSpace(payload.ShadowPod)
 	if payload.SubmissionID == "" || payload.TeamID == "" || payload.TopicName == "" || payload.MicroVMPod == "" || payload.FeederPod == "" || payload.ShadowPod == "" {
-		return queueJob{}, errors.New("submission_id, team_id, topic_name, microvm_pod_name, and feeder_pod_name are required")
+		return queueJob{}, errors.New("submission_id, team_id, topic_name, microvm_pod_name, and telemetry_pod_name are required")
 	}
 
 	return queueJob{

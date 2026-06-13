@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/iicpc/harness/internal/fix"
-	"github.com/iicpc/harness/internal/types"
+	"github.com/iicpc/telemetry/internal/fix"
+	"github.com/iicpc/telemetry/internal/types"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 

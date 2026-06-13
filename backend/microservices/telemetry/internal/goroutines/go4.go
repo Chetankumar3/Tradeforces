@@ -4,7 +4,7 @@ import (
 	"log"
 
 	hdrhistogram "github.com/HdrHistogram/hdrhistogram-go"
-	"github.com/iicpc/harness/internal/types"
+	"github.com/iicpc/telemetry/internal/types"
 )
 
 // go4State bundles every data structure Go4 owns. Wrapping them in a struct with

@@ -1,6 +1,6 @@
-# IICPC HFT Evaluation Harness
+# IICPC HFT Evaluation telemetry
 
-A production-grade Go evaluation harness for the IICPC hackathon scoring platform.
+A production-grade Go evaluation telemetry for the IICPC hackathon scoring platform.
 It consumes pre-serialized FIX 4.2 orders from Redpanda, streams them to a
 contestant matching engine over TCP, reads execution reports from both the
 contestant and a trusted shadow engine, measures nanosecond-precision latencies
@@ -24,17 +24,17 @@ communicating).
 | **Go6**  | Scorer (weighted composite, publishes JSON) | — |
 
 State that would normally need a lock is instead **owned by exactly one
-goroutine**; everything else talks to it over channels (see `cmd/harness/main.go`
+goroutine**; everything else talks to it over channels (see `cmd/telemetry/main.go`
 for the full channel plumbing and buffer sizes).
 
 ## Layout
 
 ```
-cmd/harness/main.go         startup: env, loggers, kgo client, TCP dials, channels, launch
+cmd/telemetry/main.go         startup: env, loggers, kgo client, TCP dials, channels, launch
 internal/types/types.go     all cross-goroutine structs + Config
 internal/fix/parser.go      zero-alloc FIX 4.2 parsing (ParseTag, Atoi, ReadFIXMessage)
 internal/goroutines/        globals.go (debugEnabled const) + go1a..go7
-config/schema.json          output JSON field names (mounted at /etc/harness/schema.json)
+config/schema.json          output JSON field names (mounted at /etc/telemetry/schema.json)
 Dockerfile                  multi-stage static build (CGO off, linux/amd64)
 ```
 
@@ -51,14 +51,14 @@ go build ./...     # compile everything
 > **Platform note:** Go1B uses `syscall.Write`, `syscall.EAGAIN`, and a raw
 > socket fd — this is **Linux-specific** by design (matches the `GOOS=linux`
 > Docker build). It will not compile on Windows/macOS natively. Build inside the
-> container, or cross-compile: `GOOS=linux GOARCH=amd64 go build ./cmd/harness`.
+> container, or cross-compile: `GOOS=linux GOARCH=amd64 go build ./cmd/telemetry`.
 
 ### Docker
 
 ```bash
 go mod tidy                       # must exist before docker build (Dockerfile COPYs go.sum)
-docker build -t iicpc-harness .
-docker run --rm --env-file .env iicpc-harness
+docker build -t iicpc-telemetry .
+docker run --rm --env-file .env iicpc-telemetry
 ```
 
 ### Configuration
@@ -66,7 +66,7 @@ docker run --rm --env-file .env iicpc-harness
 All configuration is via environment variables — see `.env.example`. `main.go`
 **panics immediately** if any variable is missing or fails to parse; no goroutine
 ever reads the environment directly. Output JSON field names are remappable at
-runtime by editing `config/schema.json` (mounted at `/etc/harness/schema.json`)
+runtime by editing `config/schema.json` (mounted at `/etc/telemetry/schema.json`)
 — no recompile needed.
 
 ## Scoring formula

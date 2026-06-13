@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/iicpc/harness/internal/types"
+	"github.com/iicpc/telemetry/internal/types"
 )
 
 // RunGo1B is the Ingress TCP Writer. It reads OrderMessages from memoryCh and

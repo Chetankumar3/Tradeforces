@@ -5,11 +5,11 @@
     "user_id": "team_id"
   },
   "queue2_keys": {
-    "submission_id": "sub_id",
+    "submission_id": "submission_id",
     "user_id": "team_id",
-    "microvm_pod-name": "microvm_pod-name",
-    "telemetry_pod-name": "telemetry_pod-name",
-    "shadow_pod-name": "shadow_pod-name",
-    "topic_name": "topic_name"
+    "topic_name": "topic_name",
+    "microvm_pod-name": "microvm_pod_name",
+    "telemetry_pod-name": "telemetry_pod_name",
+    "shadow_pod-name": "shadow_pod_name"
   }
 }

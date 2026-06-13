@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/iicpc/harness/internal/fix"
+	"github.com/iicpc/telemetry/internal/fix"
 )
 
 // RunGo7 is the Shadow Engine Reader. Structurally the same as Go2 but the

@@ -11,7 +11,35 @@ spec:
   runtimeClassName: kata
   restartPolicy: Never
   terminationGracePeriodSeconds: 30
-  
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchExpressions:
+            - key: submission-id
+              operator: In
+              values:
+              - "{{ submission_id }}"
+            - key: app
+              operator: In
+              values:
+              - telemetry
+              - shadow
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - tradeforces-submission
+
   containers:
   - name: trader
     image: "{{ docker_image }}"
@@ -48,18 +76,6 @@ spec:
         fieldRef:
           fieldPath: status.podIP
   
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: app
-              operator: In
-              values:
-              - tradeforces-submission
-          topologyKey: kubernetes.io/hostname
 
 ---
 # Template for telemetry pod
@@ -87,9 +103,36 @@ spec:
     spec:
       imagePullSecrets:
       - name: gar-secret
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+              - key: submission-id
+                operator: In
+                values:
+                - "{{ submission_id }}"
+              - key: app
+                operator: In
+                values:
+                - tradeforces-submission
       containers:
       - name: telemetry-container
         image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1
+        env:
+        - name: SUBMISSION_ID
+          value: "{{ submission_id }}"
+        - name: USER_ID
+          value: "{{ user_id }}"
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         envFrom:
         - configMapRef:
             name: app-env
@@ -121,9 +164,45 @@ spec:
     spec:
       imagePullSecrets:
       - name: gar-secret
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+              - key: submission-id
+                operator: In
+                values:
+                - "{{ submission_id }}"
+              - key: app
+                operator: In
+                values:
+                - tradeforces-submission
       containers:
       - name: shadow-container
         image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1
+        ports:
+        - name: admin
+          containerPort: 8080
+        - name: fix
+          containerPort: 9876
+        - name: telemetry
+          containerPort: 9100
+        env:
+        - name: SUBMISSION_ID
+          value: "{{ submission_id }}"
+        - name: TELEMETRY_HOST
+          value: "0.0.0.0"
+        - name: TELEMETRY_PORT
+          value: "9100"
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         envFrom:
         - configMapRef:
             name: app-env

@@ -15,7 +15,8 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from shared_core.DB_models import User, Submission, Base
-from shared_core.auth import create_jwt_token, get_current_user, hash_password, verify_password_hashfrom shared_core.schema_mapper import SchemaMapper
+from shared_core.auth import create_jwt_token, get_current_user, hash_password, verify_password_hash
+from shared_core.schema_mapper import SchemaMapper
 from shared_core.core import create_async_db_engine, async_sessionmaker
 from .config import settings
 

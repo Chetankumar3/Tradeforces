@@ -6,8 +6,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/iicpc/harness/internal/fix"
-	"github.com/iicpc/harness/internal/types"
+	"github.com/iicpc/telemetry/internal/fix"
+	"github.com/iicpc/telemetry/internal/types"
 )
 
 // RunGo2 is the Egress TCP Reader for the contestant engine. It reads FIX exec

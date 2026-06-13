@@ -174,11 +174,7 @@ resource "google_compute_instance" "app_sandbox" {
   }
 
   reservation_affinity {
-    type = "SPECIFIC_RESERVATION"
-    specific_reservation {
-      key    = "compute.googleapis.com/reservation-name"
-      values = ["app-sandbox-reservation"] 
-    }
+    type = "ANY_RESERVATION"
   }
 
   boot_disk {

@@ -1,4 +1,4 @@
-// Package goroutines contains the 7 worker goroutines of the harness.
+// Package goroutines contains the 7 worker goroutines of the telemetry.
 // All cross-goroutine communication happens over channels; no mutexes are used.
 package goroutines
 

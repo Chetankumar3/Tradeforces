@@ -66,7 +66,7 @@ class VMCreatorWorker:
                 return f.read()
         except FileNotFoundError:
             logger.warning(f"Pod template not found at {template_path}, falling back to legacy template")
-            legacy_template = os.path.join(os.path.dirname(__file__), "microvm_pod.tmpl")
+            legacy_template = os.path.join(os.path.dirname(__file__), "create_3_pods.tmpl")
             with open(legacy_template, "r", encoding="utf-8") as f:
                 return f.read()
     

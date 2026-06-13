@@ -7,7 +7,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/iicpc/harness/internal/types"
+	"github.com/iicpc/telemetry/internal/types"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 

@@ -1,4 +1,4 @@
-// Command harness is the IICPC HFT evaluation harness. It consumes FIX 4.2
+// Command telemetry is the IICPC HFT evaluation telemetry. It consumes FIX 4.2
 // orders from Redpanda, streams them to a contestant matching engine over TCP,
 // reads contestant and shadow execution reports, measures nanosecond latencies,
 // validates correctness, and periodically publishes a composite score back to
@@ -14,14 +14,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/iicpc/harness/internal/goroutines"
-	"github.com/iicpc/harness/internal/types"
+	"github.com/iicpc/telemetry/internal/goroutines"
+	"github.com/iicpc/telemetry/internal/types"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 )
 
 // schemaPath is the hardcoded container path for the output-field schema.
-const schemaPath = "/etc/harness/schema.json"
+const schemaPath = "/etc/telemetry/schema.json"
 
 func main() {
 	// 1. Parse all env vars into *Config (panics on any missing/invalid value).

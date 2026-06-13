@@ -108,3 +108,29 @@ docker-compose*.yaml
 # Local env files
 .env.local
 .env.*.local
+
+# Block heavy archives from entering the daemon context
+*.zip
+*.tar.gz
+*.tar
+
+# Block local dev databases or runtime files that silently bust the cache
+*.sqlite3
+*.db
+*.db-journal
+
+# Block Python virtual envs (just in case they are named differently)
+.tox/
+
+# Force drop all nested virtual environments
+**/venv
+**/venv/
+**/.venv
+**/.venv/
+**/env
+**/env/
+
+# Force drop all nested python cache and archives
+**/__pycache__
+**/*.zip
+**/*.tar.gz

@@ -63,16 +63,18 @@ class VMCreatorWorker:
         template_path = os.path.join(os.path.dirname(__file__), "create_3_pods.tmpl")
         try:
             with open(template_path, "r", encoding="utf-8") as f:
-                return f.read()
+                content = f.read()
+                logger.info(f"Loaded pod template from {template_path}")
+                return content
         except FileNotFoundError:
-            logger.warning(f"Pod template not found at {template_path}, falling back to legacy template")
-            legacy_template = os.path.join(os.path.dirname(__file__), "create_3_pods.tmpl")
-            with open(legacy_template, "r", encoding="utf-8") as f:
-                return f.read()
-    
-    def _get_default_pod_template(self) -> str:
-        """Get default Pod template if file not found."""
-        return """
+            logger.warning(
+                f"Pod template not found at {template_path}; falling back to built-in default"
+            )
+            return self._get_default_pod_template()
+
+        def _get_default_pod_template(self) -> str:
+            """Get default Pod template if file not found."""
+            return """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -104,68 +106,88 @@ spec:
         user_id: int
     ) -> str:
         """Trigger Cloud Build to build and push image."""
-        logger.info(f"Triggering Cloud Build for submission {submission_id}")
-        
-        # Cloud Build step to unzip, build, and push
-        build_config = {
-            "name": f"submission-{submission_id}",
-            "source": {
-                "storage_source": {
-                    "bucket": settings.gcs_bucket_name,
-                    "object": f"submissions/{user_id}/{submission_id}.zip"
-                }
-            },
-            "steps": [
-                {
-                    "name": "gcr.io/cloud-builders/gke-deploy",
-                    "args": ["run", "--filename=Dockerfile"],
-                },
-                {
-                    "name": "gcr.io/cloud-builders/docker",
-                    "args": [
-                        "build",
-                        "-t",
-                        f"{settings.artifact_registry_url}/submission-{submission_id}:latest",
-                        "."
-                    ]
-                },
-                {
-                    "name": "gcr.io/cloud-builders/docker",
-                    "args": [
-                        "push",
-                        f"{settings.artifact_registry_url}/submission-{submission_id}:latest"
-                    ]
-                }
-            ],
-            "images": [
-                f"{settings.artifact_registry_url}/submission-{submission_id}:latest"
-            ]
-        }
-        
-        # Create build
-        build_request = cloudbuild_v1.CreateBuildRequest(
-            project_id=self.project_id,
-            build=build_config
-        )
-        
-        operation = self.cloudbuild_client.create_build(request=build_request)
-        logger.info(f"Build started: {operation.name}")
-        
-        # Wait for build to complete
-        import time
-        while True:
-            build = self.cloudbuild_client.get_build(
-                project_id=self.project_id,
-                id=operation.name.split("/")[-1]
+        # Parse gcs_url (gs://<bucket>/<object>) — use the actual stored path, not a derived one
+        if gcs_url.startswith("gs://"):
+            without_scheme = gcs_url[5:]
+            slash_idx = without_scheme.index("/")
+            src_bucket = without_scheme[:slash_idx]
+            src_object = without_scheme[slash_idx + 1:]
+        else:
+            src_bucket = settings.gcs_bucket_name
+            src_object = f"submissions/{user_id}/{submission_id}.zip"
+            logger.warning(
+                f"[CB] submission={submission_id} | gcs_url has unexpected format '{gcs_url}'; "
+                f"falling back to gs://{src_bucket}/{src_object}"
             )
-            
-            if build.status in [cloudbuild_v1.Build.Status.SUCCESS]:
-                logger.info(f"Build succeeded for submission {submission_id}")
-                return f"{settings.artifact_registry_url}/submission-{submission_id}:latest"
-            elif build.status in [cloudbuild_v1.Build.Status.FAILURE, cloudbuild_v1.Build.Status.TIMEOUT]:
-                raise Exception(f"Build failed: {build.failure_message}")
-            
-            await asyncio.sleep(5)
+    
+        image_uri = f"{settings.artifact_registry_url}/submission-{submission_id}:latest"
+        logger.info(
+            f"[CB] submission={submission_id} user={user_id} | "
+            f"source=gs://{src_bucket}/{src_object} → {image_uri}"
+        )
+    
+        build = cloudbuild_v1.Build(
+    service_account=(
+            f"projects/{self.project_id}/serviceAccounts/"
+            f"{settings.cloud_build_service_account}"
+        ),
+        options=cloudbuild_v1.BuildOptions(
+            default_logs_bucket_behavior=(
+                cloudbuild_v1.BuildOptions.DefaultLogsBucketBehavior.REGIONAL_USER_OWNED_BUCKET
+            )
+        ),
+        source=cloudbuild_v1.Source(
+            storage_source=cloudbuild_v1.StorageSource(
+                bucket=src_bucket,
+                object_=src_object,
+            )
+        ),
+        steps=[
+            cloudbuild_v1.BuildStep(
+                name="gcr.io/cloud-builders/docker",
+                entrypoint="bash",
+                args=[
+                    "-c",
+                    (
+                        "DOCKER_CTX=$(dirname $(find /workspace -name Dockerfile -maxdepth 2 | head -1)) && "
+                        "echo \"[CB] Building from context: $$DOCKER_CTX\" && "
+                        f"docker build -t {image_uri} $$DOCKER_CTX"
+                    ),
+                ],
+            ),
+            cloudbuild_v1.BuildStep(
+                name="gcr.io/cloud-builders/docker",
+                args=["push", image_uri],
+            ),
+        ],
+        images=[image_uri],
+    )
+    
+        operation = self.cloudbuild_client.create_build(
+            request=cloudbuild_v1.CreateBuildRequest(
+                project_id=self.project_id,
+                build=build,
+            )
+        )
+        logger.info(f"[CB] submission={submission_id} | operation started: {operation.operation.name}")
+    
+        try:
+            completed_build = await asyncio.to_thread(lambda: operation.result(timeout=600))
+        except Exception as exc:
+            logger.error(f"[CB] submission={submission_id} | operation.result() raised: {exc}")
+            raise
+    
+        if completed_build.status != cloudbuild_v1.Build.Status.SUCCESS:
+            logger.error(
+                f"[CB] submission={submission_id} | terminal status={completed_build.status.name} "
+                f"failure_msg={completed_build.failure_message}"
+            )
+            raise RuntimeError(
+                f"Cloud Build failed [{completed_build.status.name}]: {completed_build.failure_message}"
+            )
+    
+        logger.info(f"[CB] submission={submission_id} | build succeeded → {image_uri}")
+        return image_uri
     
     async def deploy_pod(
         self,
@@ -259,44 +281,89 @@ spec:
                 raise
     
     async def create_redpanda_topic(self, topic_name: str) -> None:
-        """Create the Redpanda topic synchronously for this submission."""
+        """Create the Redpanda topic for this submission."""
         if not settings.redpanda_bootstrap_servers:
-            logger.warning("REDPANDA_BOOTSTRAP_SERVERS is not configured; skipping topic creation")
+            logger.warning("[RP] REDPANDA_BOOTSTRAP_SERVERS not set; skipping topic creation")
             return
 
         try:
             from kafka import KafkaAdminClient
             from kafka.admin import NewTopic
+            from kafka.errors import TopicAlreadyExistsError
         except ImportError as exc:
-            logger.warning(f"Kafka client dependency is unavailable: {exc}")
-            return
+            logger.error(f"[RP] kafka-python not installed: {exc}")
+            raise
 
-        admin_client = KafkaAdminClient(
-            bootstrap_servers=[server.strip() for server in settings.redpanda_bootstrap_servers.split(',') if server.strip()],
-            client_id="tradeforces-vm-creator",
-            security_protocol="SASL_SSL" if settings.redpanda_sasl_username and settings.redpanda_sasl_password else "SSL",
-            ssl_check_hostname=True,
-            sasl_mechanism=settings.redpanda_sasl_mechanism,
-            sasl_plain_username=settings.redpanda_sasl_username,
-            sasl_plain_password=settings.redpanda_sasl_password,
-        )
-        try:
-            admin_client.create_topics([NewTopic(name=topic_name, num_partitions=1, replication_factor=1)])
-            logger.info(f"Created Redpanda topic {topic_name} with 1 partition")
-        except Exception as exc:
-            logger.warning(f"Skipping Redpanda topic creation for {topic_name}: {exc}")
-        finally:
-            admin_client.close()
+        def _create_topic_sync() -> None:
+            logger.info(
+                f"[RP] Connecting to {settings.redpanda_bootstrap_servers} "
+                f"as {settings.redpanda_sasl_username}"
+            )
+            admin = KafkaAdminClient(
+                bootstrap_servers=[
+                    s.strip()
+                    for s in settings.redpanda_bootstrap_servers.split(",")
+                    if s.strip()
+                ],
+                client_id="tradeforces-vm-creator",
+                security_protocol="SASL_SSL",
+                ssl_check_hostname=True,
+                sasl_mechanism=settings.redpanda_sasl_mechanism,
+                sasl_plain_username=settings.redpanda_sasl_username,
+                sasl_plain_password=settings.redpanda_sasl_password,
+            )
+            try:
+                admin.create_topics([
+                    NewTopic(
+                        name=topic_name,
+                        num_partitions=1,
+                        replication_factor=-1,  # Redpanda Cloud manages replication
+                        replica_assignments=[],
+                    )
+                ])
+                logger.info(f"[RP] Created topic '{topic_name}' (1 partition, cluster-default replication)")
+            except TopicAlreadyExistsError:
+                logger.info(f"[RP] Topic '{topic_name}' already exists; skipping")
+            except Exception as exc:
+                logger.error(f"[RP] Failed to create topic '{topic_name}': {exc}")
+                raise
+            finally:
+                admin.close()
+
+        await asyncio.to_thread(_create_topic_sync)
 
     def _queue2_backlog(self) -> int:
-        """Return the current Queue 2 backlog for backpressure monitoring."""
-        try:
-            subscription_path = self.subscriber.subscription_path(self.project_id, settings.queue2_subscription_name)
-            subscription = self.subscriber.get_subscription(request={"subscription": subscription_path})
-            return int(getattr(subscription, "num_messages", 0) or 0)
-        except Exception as exc:
-            logger.warning(f"Unable to read Queue 2 backlog: {exc}")
-            return 0
+       """Return the current Queue 2 undelivered message count via Cloud Monitoring."""
+       try:
+           from google.cloud import monitoring_v3
+           import time as _time
+
+           mc = monitoring_v3.MetricServiceClient(credentials=self.credentials)
+           now = _time.time()
+           interval = monitoring_v3.TimeInterval(
+               end_time={"seconds": int(now)},
+               start_time={"seconds": int(now) - 120},
+           )
+           results = mc.list_time_series(
+               request={
+                   "name": f"projects/{self.project_id}",
+                   "filter": (
+                       'metric.type="pubsub.googleapis.com/subscription/num_undelivered_messages"'
+                       f' AND resource.labels.subscription_id="{settings.queue2_subscription_name}"'
+                   ),
+                   "interval": interval,
+                   "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+               }
+           )
+           latest = 0
+           for ts in results:
+               for point in ts.points:
+                   latest = max(latest, point.value.int64_value)
+           logger.debug(f"[BP] Queue 2 undelivered={latest} (threshold={settings.max_queue2_size})")
+           return latest
+       except Exception as exc:
+           logger.warning(f"[BP] Unable to read Queue 2 backlog via Monitoring API: {exc}; assuming 0")
+           return 0
 
     async def publish_to_queue2(
         self,
@@ -308,8 +375,6 @@ spec:
         topic_name: str,
     ) -> None:
         """Publish the updated Queue 2 payload for the submission."""
-        logger.info(f"Publishing result for submission {submission_id} to Queue 2")
-
         message_data = {
             "submission_id": submission_id,
             "user_id": user_id,
@@ -318,16 +383,23 @@ spec:
             "shadow_pod-name": shadow_pod_name,
             "topic_name": topic_name,
         }
-        
-        # Map using schema
+
         queue2_message = schema_mapper.to_queue2(message_data)
-        
         topic_path = self.publisher.topic_path(self.project_id, settings.queue2_name)
-        self.publisher.publish(
-            topic_path,
-            json.dumps(queue2_message).encode("utf-8")
+        payload = json.dumps(queue2_message).encode("utf-8")
+
+        logger.info(
+            f"[Q2] submission={submission_id} | publishing to {topic_path} | "
+            f"microvm={microvm_pod_name} telemetry={telemetry_pod_name} shadow={shadow_pod_name}"
         )
-        logger.info(f"Message published to Queue 2 for submission {submission_id}")
+
+        future = self.publisher.publish(topic_path, payload)
+        try:
+            message_id = await asyncio.to_thread(future.result)
+            logger.info(f"[Q2] submission={submission_id} | published message_id={message_id}")
+        except Exception as exc:
+            logger.error(f"[Q2] submission={submission_id} | publish failed: {exc}")
+            raise
     
     async def process_submission(
         self,
@@ -443,23 +515,38 @@ spec:
     
     async def start_listener(self) -> None:
         """Start listening for messages."""
-        logger.info("Starting VM Creator worker...")
-        
+        logger.info(f"Starting VM Creator worker for subscription: {settings.queue1_subscription_name}")
+
         subscription_path = self.subscriber.subscription_path(
             self.project_id,
             settings.queue1_subscription_name
         )
-        
-        streaming_pull_future = self.subscriber.subscribe(
+
+        loop = asyncio.get_running_loop()
+        logger.debug("Successfully captured main asyncio event loop.")
+
+        def threadsafe_callback(msg):
+            logger.info(f"Background thread received msg_id: {msg.message_id}. Injecting into event loop...")
+            asyncio.run_coroutine_threadsafe(self.message_callback(msg), loop)
+
+        logger.info(f"Opening gRPC streaming pull connection to {subscription_path}...")
+
+        # Store on self so it can be gracefully cancelled during app teardown
+        self.streaming_pull_future = self.subscriber.subscribe(
             subscription_path,
-            callback=lambda msg: asyncio.create_task(self.message_callback(msg))
+            callback=threadsafe_callback
         )
-        
+
+        logger.info("Streaming pull connection established. Waiting for messages...")
+
         try:
-            streaming_pull_future.result(timeout=None)
+            await asyncio.wrap_future(self.streaming_pull_future)
+        except asyncio.CancelledError:
+            logger.info("Listener task was cancelled (likely application shutdown).")
+            self.streaming_pull_future.cancel()
         except Exception as e:
-            logger.error(f"Listener error: {e}")
-            streaming_pull_future.cancel()
+            logger.error(f"Listener stream encountered a fatal error: {e}", exc_info=True)
+            self.streaming_pull_future.cancel()
 
 
 async def run_worker() -> None:

@@ -1,0 +1,40 @@
+{
+  "global_limits": {
+    "max_order_quantity": 10000,
+    "max_order_value": 1000000.0,
+    "max_position_quantity": 50000,
+    "max_position_value": 5000000.0,
+    "daily_loss_limit": 100000.0,
+    "credit_limit": 10000000.0,
+    "fat_finger_threshold": 0.10,
+    "concentration_limit": 0.25
+  },
+  "account_limits": {
+    "TESTACCT001": {
+      "max_order_quantity": 5000,
+      "max_position_quantity": 25000,
+      "daily_loss_limit": 50000.0,
+      "credit_limit": 5000000.0
+    },
+    "TESTACCT002": {
+      "max_order_quantity": 2000,
+      "max_position_quantity": 10000,
+      "daily_loss_limit": 20000.0,
+      "credit_limit": 2000000.0
+    }
+  },
+  "symbol_limits": {
+    "AAPL": {
+      "max_order_quantity": 10000,
+      "max_position_quantity": 50000
+    },
+    "GOOGL": {
+      "max_order_quantity": 1000,
+      "max_position_quantity": 5000
+    },
+    "TSLA": {
+      "max_order_quantity": 5000,
+      "max_position_quantity": 25000
+    }
+  }
+}

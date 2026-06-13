@@ -41,20 +41,19 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Create non-root user for security
 RUN useradd -m -u 1000 appuser
 
-# Copy shared core
-COPY shared_core /app/shared_core
+# Copy shared core AND set ownership in the exact same step
+COPY --chown=appuser:appuser shared_core /app/shared_core
 
-# Copy vm_creator service
-COPY microservices/vm_creator /app/microservices/vm_creator
+# Copy vm_creator service AND set ownership in the exact same step
+COPY --chown=appuser:appuser microservices/vm_creator /app/microservices/vm_creator
 
-# Change ownership
-RUN chown -R appuser:appuser /app
+# DELETE the RUN chown -R appuser:appuser /app line entirely
 
 # Switch to non-root user
 USER appuser
 
-# Start the worker directly instead of running a server process
+# Start the worker directly
 CMD ["python", "-m", "microservices.vm_creator.main"]
+# python -m microservices.vm_creator.main

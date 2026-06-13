@@ -21,7 +21,7 @@ build_and_push() {
     build_args+=(--build-arg BASE_IMAGE="${SHADOW_BASE_IMAGE}")
   fi
 
-  docker build --progress=auto \
+  DOCKER_BUILDKIT=1 docker build --progress=auto \
     "${build_args[@]}" \
     -t "${REGISTRY}/${image_name}:${VERSION}" \
     -f "${dockerfile}" \

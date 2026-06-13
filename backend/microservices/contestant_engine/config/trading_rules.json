@@ -1,0 +1,18 @@
+{
+  "maxOrderSize": 1000000.0,
+  "minOrderSize": 1.0,
+  "maxPositionSize": 10000000.0,
+  "maxOrdersPerSecond": 100,
+  "tradableSymbols": [
+    "AAPL",
+    "GOOGL",
+    "MSFT",
+    "AMZN",
+    "TSLA",
+    "META",
+    "NVDA",
+    "JPM",
+    "BAC",
+    "GS"
+  ]
+}

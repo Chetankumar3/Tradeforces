@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     # GCP
     project_id: str = os.getenv("PROJECT_ID", "your-project-id")
     artifact_registry_url: str = os.getenv("ARTIFACT_REGISTRY_URL", "")
+    cloud_build_service_account: str = os.getenv("SERVICE_ACCOUNT_EMAIL", "")
     
     # Pub/Sub
     queue1_name: str = os.getenv("QUEUE1_NAME", "submissions-queue")

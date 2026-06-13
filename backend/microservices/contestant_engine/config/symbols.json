@@ -1,0 +1,124 @@
+{
+  "instruments": [
+    {
+      "symbol": "AAPL",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 175.50,
+      "volatility": 0.015
+    },
+    {
+      "symbol": "GOOGL",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 140.25,
+      "volatility": 0.018
+    },
+    {
+      "symbol": "MSFT",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 380.75,
+      "volatility": 0.016
+    },
+    {
+      "symbol": "TSLA",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 245.00,
+      "volatility": 0.025
+    },
+    {
+      "symbol": "AMZN",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 155.80,
+      "volatility": 0.020
+    },
+    {
+      "symbol": "META",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 485.20,
+      "volatility": 0.022
+    },
+    {
+      "symbol": "NVDA",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 495.75,
+      "volatility": 0.030
+    },
+    {
+      "symbol": "JPM",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 185.40,
+      "volatility": 0.012
+    },
+    {
+      "symbol": "V",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 275.90,
+      "volatility": 0.014
+    },
+    {
+      "symbol": "SPY",
+      "type": "ETF",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 480.50,
+      "volatility": 0.010
+    }
+  ]
+}

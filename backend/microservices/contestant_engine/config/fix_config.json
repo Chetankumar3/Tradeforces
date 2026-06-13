@@ -1,0 +1,31 @@
+{
+  "sessions": [
+    {
+      "sessionId": "CLIENT_SESSION_1",
+      "senderCompId": "CLIENT1",
+      "targetCompId": "GATEWAY",
+      "heartbeatInterval": 30,
+      "reconnectInterval": 30,
+      "logPath": "logs",
+      "isInitiator": false,
+      "socketAcceptPort": 9876,
+      "fixVersion": "FIX.4.4",
+      "resetSeqNumFlag": false,
+      "dataDirectory": "store/client1"
+    },
+    {
+      "sessionId": "EXCHANGE_SESSION_1",
+      "senderCompId": "GATEWAY",
+      "targetCompId": "EXCHANGE1",
+      "heartbeatInterval": 30,
+      "reconnectInterval": 30,
+      "logPath": "logs",
+      "isInitiator": true,
+      "socketConnectHost": "localhost",
+      "socketConnectPort": 9877,
+      "fixVersion": "FIX.4.4",
+      "resetSeqNumFlag": false,
+      "dataDirectory": "store/exchange1"
+    }
+  ]
+}

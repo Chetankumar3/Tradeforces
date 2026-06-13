@@ -1,6 +1,7 @@
 #!/bin/bash
 REGISTRY="${1:-us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces}"
 VERSION="${2:-1.1}"
+SHADOW_BASE_IMAGE="${SHADOW_BASE_IMAGE:-ubuntu:24.04}"
 
 set -euo pipefail
 
@@ -17,16 +18,15 @@ build_and_push() {
   local build_args=()
 
   if [ "$service_name" = "Shadow Engine service" ]; then
-    build_args+=(--build-arg BASE_IMAGE=ubuntu:24.04)
+    build_args+=(--build-arg BASE_IMAGE="${SHADOW_BASE_IMAGE}")
   fi
 
   docker build --progress=auto \
     "${build_args[@]}" \
     -t "${REGISTRY}/${image_name}:${VERSION}" \
     -f "${dockerfile}" \
-    "${context}"
-
-  docker push "${REGISTRY}/${image_name}:${VERSION}"
+    "${context}" && \
+  docker push "${REGISTRY}/${image_name}:${VERSION}" && \
   echo "${service_name} pushed successfully"
 }
 

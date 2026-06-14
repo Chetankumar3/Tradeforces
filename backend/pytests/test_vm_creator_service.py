@@ -159,6 +159,56 @@ class TestVMCreatorTemplate:
 class TestVMCreatorWorker:
     """Regression tests for worker helpers."""
 
+    def test_create_redpanda_topic_uses_kafka_admin_client(self, monkeypatch):
+        """The worker should create Redpanda topics through the Kafka admin client."""
+        worker_module = __import__(
+            "microservices.vm_creator.worker",
+            fromlist=["VMCreatorWorker"],
+        )
+
+        worker = object.__new__(worker_module.VMCreatorWorker)
+        captured = {}
+
+        class FakeNewTopic:
+            def __init__(self, *args, **kwargs):
+                self.name = args[0] if args else kwargs.get("name")
+                captured["topic_args"] = args
+                captured["topic_kwargs"] = {"name": self.name, **kwargs}
+
+        class FakeKafkaAdminClient:
+            def __init__(self, *args, **kwargs):
+                captured["admin_conf"] = args[0] if args else None
+                captured["admin_kwargs"] = kwargs
+
+            def create_topics(self, new_topics):
+                captured["topics"] = new_topics
+                return {"submission-42": SimpleNamespace(result=lambda: None)}
+
+            def close(self):
+                captured["closed"] = True
+
+        monkeypatch.setitem(sys.modules, "confluent_kafka", SimpleNamespace(KafkaException=RuntimeError))
+        monkeypatch.setitem(sys.modules, "confluent_kafka.admin", SimpleNamespace(AdminClient=FakeKafkaAdminClient, NewTopic=FakeNewTopic))
+
+        monkeypatch.setattr(worker_module.settings, "redpanda_bootstrap_servers", "broker-1:9092,broker-2:9092", raising=False)
+        monkeypatch.setattr(worker_module.settings, "redpanda_sasl_username", "rp_user", raising=False)
+        monkeypatch.setattr(worker_module.settings, "redpanda_sasl_password", "rp_pass", raising=False)
+        monkeypatch.setattr(worker_module.settings, "redpanda_sasl_mechanism", "SCRAM-SHA-256", raising=False)
+
+        asyncio.run(worker.create_redpanda_topic("submission-42"))
+
+        assert captured["admin_conf"]["bootstrap.servers"] == "broker-1:9092,broker-2:9092"
+        assert captured["admin_conf"]["security.protocol"] == "SASL_SSL"
+        assert captured["admin_conf"]["sasl.mechanisms"] == "SCRAM-SHA-256"
+        assert captured["admin_conf"]["sasl.username"] == "rp_user"
+        assert captured["admin_conf"]["sasl.password"] == "rp_pass"
+        assert len(captured["topics"]) == 1
+        assert captured["topics"][0].name == "submission-42"
+        assert captured["topic_kwargs"]["name"] == "submission-42"
+        assert captured["topic_kwargs"]["num_partitions"] == 1
+        assert captured["topic_kwargs"]["replication_factor"] == 3
+        assert captured["closed"] is True
+
     def test_build_render_context_populates_required_env_values(self):
         """The manifest render context should include the required topic and port-address values."""
         worker = object.__new__(__import__("microservices.vm_creator.worker", fromlist=["VMCreatorWorker"]).VMCreatorWorker)

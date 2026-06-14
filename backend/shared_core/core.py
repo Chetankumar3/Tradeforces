@@ -39,11 +39,14 @@ _session_factory = None
 
 def create_async_db_engine():
     """Create async SQLAlchemy engine for Cloud SQL."""
+    logger.info("Creating async DB engine func called")
     global _engine
+
     if _engine is None:
         # Cast timeout to float to prevent asyncio TypeError
         timeout_val = float(os.getenv("DB_CONNECT_TIMEOUT", "10"))
         
+        logger.info("Creating async DB engine with URL: %s", get_db_url())
         _engine = create_async_engine(
             get_db_url(),
             echo=False,
@@ -71,6 +74,7 @@ async def init_db() -> bool:
     try:
         engine = create_async_db_engine()
         async with engine.begin() as conn:
+            logger.info("Initializing database schema...")
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database schema initialized.")
         return True

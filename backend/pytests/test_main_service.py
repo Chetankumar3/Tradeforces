@@ -1,5 +1,6 @@
 """Tests for main service."""
 
+import socket
 import pytest
 import sys
 import os
@@ -44,6 +45,37 @@ class TestAuthEndpoints:
         )
         # Should return 401 or 422 depending on implementation
         assert response.status_code in [401, 422, 500]
+
+
+class TestDatabaseErrorHandling:
+    """Test DB failure handling for auth endpoints."""
+
+    def test_login_returns_503_when_db_lookup_fails(self, client, monkeypatch):
+        """DB resolution errors should be returned as a service-unavailable response."""
+
+        class BrokenSession:
+            async def execute(self, *_args, **_kwargs):
+                raise socket.gaierror(-2, "Name or service not known")
+
+        class BrokenSessionContext:
+            async def __aenter__(self):
+                return BrokenSession()
+
+            async def __aexit__(self, exc_type, exc, tb):
+                return False
+
+        monkeypatch.setattr(
+            "microservices.main.routes.async_sessionmaker_factory",
+            lambda: lambda: BrokenSessionContext(),
+        )
+
+        response = client.post(
+            "/login/credentials",
+            json={"username": "anyuser", "password": "anypassword"},
+        )
+
+        assert response.status_code == 503
+        assert "Database unavailable" in response.json()["detail"]
 
 
 class TestUploadEndpoints:

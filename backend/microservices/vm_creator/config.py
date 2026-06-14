@@ -24,9 +24,9 @@ class Settings(BaseSettings):
     max_queue2_size: int = int(os.getenv("MAX_QUEUE2_SIZE", "100"))
 
     # Redpanda settings
-    redpanda_bootstrap_servers: str = os.getenv("REDPANDA_BOOTSTRAP_SERVERS", "")
-    redpanda_sasl_username: str = os.getenv("REDPANDA_SASL_USERNAME", "")
-    redpanda_sasl_password: str = os.getenv("REDPANDA_SASL_PASSWORD", "")
+    redpanda_bootstrap_servers: str = os.getenv("REDPANDA_BOOTSTRAP_SERVERS", "d8ldqou8rvp9ucmhj1tg.any.ap-south-1.mpx.prd.cloud.redpanda.com:9092")
+    redpanda_sasl_username: str = os.getenv("REDPANDA_SASL_USERNAME", "rp_user")
+    redpanda_sasl_password: str = os.getenv("REDPANDA_SASL_PASSWORD", "rp_123")
     redpanda_sasl_mechanism: str = os.getenv("REDPANDA_SASL_MECHANISM", "SCRAM-SHA-256")
     
     # Database

@@ -127,41 +127,41 @@ spec:
         )
     
         build = cloudbuild_v1.Build(
-    service_account=(
-            f"projects/{self.project_id}/serviceAccounts/"
-            f"{settings.cloud_build_service_account}"
-        ),
-        options=cloudbuild_v1.BuildOptions(
-            default_logs_bucket_behavior=(
-                cloudbuild_v1.BuildOptions.DefaultLogsBucketBehavior.REGIONAL_USER_OWNED_BUCKET
-            )
-        ),
-        source=cloudbuild_v1.Source(
-            storage_source=cloudbuild_v1.StorageSource(
-                bucket=src_bucket,
-                object_=src_object,
-            )
-        ),
-        steps=[
-            cloudbuild_v1.BuildStep(
-                name="gcr.io/cloud-builders/docker",
-                entrypoint="bash",
-                args=[
-                    "-c",
-                    (
-                        "DOCKER_CTX=$(dirname $(find /workspace -name Dockerfile -maxdepth 2 | head -1)) && "
-                        "echo \"[CB] Building from context: $$DOCKER_CTX\" && "
-                        f"docker build -t {image_uri} $$DOCKER_CTX"
-                    ),
-                ],
+            service_account=(
+                f"projects/{self.project_id}/serviceAccounts/"
+                f"{settings.cloud_build_service_account}"
             ),
-            cloudbuild_v1.BuildStep(
-                name="gcr.io/cloud-builders/docker",
-                args=["push", image_uri],
+            options=cloudbuild_v1.BuildOptions(
+                default_logs_bucket_behavior=(
+                    cloudbuild_v1.BuildOptions.DefaultLogsBucketBehavior.   REGIONAL_USER_OWNED_BUCKET
+                )
             ),
-        ],
-        images=[image_uri],
-    )
+            source=cloudbuild_v1.Source(
+                storage_source=cloudbuild_v1.StorageSource(
+                    bucket=src_bucket,
+                    object_=src_object,
+                )
+            ),
+            steps=[
+                cloudbuild_v1.BuildStep(
+                    name="gcr.io/cloud-builders/docker",
+                    entrypoint="bash",
+                    args=[
+                        "-c",
+                        (
+                            "DOCKER_BUILDKIT=1 DOCKER_CTX=$(dirname $(find /workspace -name Dockerfile -maxdepth 2 | head -1)) && "
+                            "echo \"[CB] Building from context: $$DOCKER_CTX\" && "
+                            f"docker buildx build --load --tag {image_uri} $$DOCKER_CTX"
+                        ),
+                    ],
+                ),
+                cloudbuild_v1.BuildStep(
+                    name="gcr.io/cloud-builders/docker",
+                    args=["push", image_uri],
+                ),
+            ],
+            images=[image_uri],
+        )
     
         operation = self.cloudbuild_client.create_build(
             request=cloudbuild_v1.CreateBuildRequest(
@@ -355,52 +355,60 @@ spec:
         if not settings.redpanda_bootstrap_servers:
             logger.warning("[RP] REDPANDA_BOOTSTRAP_SERVERS not set; skipping topic creation")
             return
-
+    
         try:
-            from kafka import KafkaAdminClient
-            from kafka.admin import NewTopic
-            from kafka.errors import TopicAlreadyExistsError
+            from confluent_kafka import KafkaException
+            from confluent_kafka.admin import AdminClient, NewTopic
         except ImportError as exc:
-            logger.error(f"[RP] kafka-python not installed: {exc}")
+            logger.error(f"[RP] confluent-kafka not installed: {exc}")
             raise
 
-        def _create_topic_sync() -> None:
-            logger.info(
-                f"[RP] Connecting to {settings.redpanda_bootstrap_servers} "
-                f"as {settings.redpanda_sasl_username}"
-            )
-            admin = KafkaAdminClient(
-                bootstrap_servers=[
-                    s.strip()
-                    for s in settings.redpanda_bootstrap_servers.split(",")
-                    if s.strip()
-                ],
-                client_id="tradeforces-vm-creator",
-                security_protocol="SASL_SSL",
-                ssl_check_hostname=True,
-                sasl_mechanism=settings.redpanda_sasl_mechanism,
-                sasl_plain_username=settings.redpanda_sasl_username,
-                sasl_plain_password=settings.redpanda_sasl_password,
-            )
-            try:
-                admin.create_topics([
-                    NewTopic(
-                        name=topic_name,
-                        num_partitions=1,
-                        replication_factor=-1,  # Redpanda Cloud manages replication
-                        replica_assignments=[],
-                    )
-                ])
-                logger.info(f"[RP] Created topic '{topic_name}' (1 partition, cluster-default replication)")
-            except TopicAlreadyExistsError:
-                logger.info(f"[RP] Topic '{topic_name}' already exists; skipping")
-            except Exception as exc:
-                logger.error(f"[RP] Failed to create topic '{topic_name}': {exc}")
-                raise
-            finally:
-                admin.close()
+        logger.info(
+            f"[RP] Connecting to {settings.redpanda_bootstrap_servers} "
+            f"as {settings.redpanda_sasl_username}"
+        )
 
-        await asyncio.to_thread(_create_topic_sync)
+        conf = {
+            "bootstrap.servers": ",".join(
+                s.strip() for s in settings.redpanda_bootstrap_servers.split(",") if s.strip()
+            ),
+            "security.protocol": "SASL_SSL",
+            "sasl.mechanisms": settings.redpanda_sasl_mechanism,
+            "sasl.username": settings.redpanda_sasl_username,
+            "sasl.password": settings.redpanda_sasl_password,
+        }
+        admin = AdminClient(conf)
+
+        try:
+            futures = admin.create_topics([
+                NewTopic(
+                    topic_name,
+                    num_partitions=1,
+                    replication_factor=3,
+                )
+            ])
+
+            for created_topic, future in futures.items():
+                try:
+                    future.result()
+                    logger.info(
+                        f"[RP] Created topic '{created_topic}' (1 partition, cluster-default replication)"
+                    )
+                except KafkaException as exc:
+                    error_code = exc.args[0].name() if hasattr(exc.args[0], "name") else exc.args[0]
+                    if error_code == "TOPIC_ALREADY_EXISTS":
+                        logger.info(f"[RP] Topic '{created_topic}' already exists; skipping")
+                    else:
+                        logger.error(f"[RP] Failed to create topic '{created_topic}': {exc}")
+                        raise
+                except Exception as exc:
+                    logger.error(f"[RP] Failed to create topic '{created_topic}': {exc}")
+                    raise
+        except Exception as exc:
+            logger.error(f"[RP] Failed to create topic '{topic_name}': {exc}")
+            raise
+        finally:
+            admin.close()
 
     def _queue2_backlog(self) -> int:
        """Return the current Queue 2 undelivered message count via Cloud Monitoring."""
@@ -490,11 +498,13 @@ spec:
             
             # Trigger Cloud Build
             docker_image = await self.trigger_cloud_build(gcs_url, submission_id, user_id)
+            logger.info(f"Cloud Build completed for submission {submission_id}, image: {docker_image}")
 
             topic_name = str(submission_id)
 
             # Create the Redpanda topic before the telemetry/shadow manifest is rendered.
             await self.create_redpanda_topic(topic_name)
+            logger.info(f"Redpanda topic '{topic_name}' is ready for submission {submission_id}")
 
             # Deploy the VM, telemetry, and shadow resources using the topic name in the env vars.
             deployment_info = await self.deploy_pod(

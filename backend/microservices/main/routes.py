@@ -9,6 +9,7 @@ from google.cloud import storage
 from google.cloud import pubsub_v1
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 import sys
 import os
 
@@ -63,12 +64,38 @@ class RegisterResponse(BaseModel):
     user_id: int
 
 
+def _is_db_error(exc: Exception) -> bool:
+    """Return True when the exception comes from DB connectivity or SQL execution."""
+    return isinstance(exc, (SQLAlchemyError, OSError, TimeoutError))
+
+
+async def _safe_execute(session: AsyncSession, statement):
+    """Execute a statement and convert DB connectivity failures into a 503 response."""
+    try:
+        return await session.execute(statement)
+    except Exception as exc:
+        if _is_db_error(exc):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Database unavailable; please try again later.",
+            ) from exc
+        raise
+
+
 # Helper: Get async session
 async def get_db_session() -> AsyncSession:
     """Get database session."""
     SessionLocal = async_sessionmaker_factory()
-    async with SessionLocal() as session:
-        yield session
+    try:
+        async with SessionLocal() as session:
+            yield session
+    except Exception as exc:
+        if _is_db_error(exc):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Database unavailable; please try again later.",
+            ) from exc
+        raise
 
 
 def get_gcs_client():
@@ -113,8 +140,9 @@ async def register(request: RegisterRequest, session: AsyncSession = Depends(get
     """Register a new user and return a JWT token."""
 
     # Check username uniqueness
-    result = await session.execute(
-        select(User).where(User.username == request.username)
+    result = await _safe_execute(
+        session,
+        select(User).where(User.username == request.username),
     )
     if result.scalars().first():
         raise HTTPException(
@@ -123,8 +151,9 @@ async def register(request: RegisterRequest, session: AsyncSession = Depends(get
         )
 
     # Check email uniqueness
-    result = await session.execute(
-        select(User).where(User.email == request.email)
+    result = await _safe_execute(
+        session,
+        select(User).where(User.email == request.email),
     )
     if result.scalars().first():
         raise HTTPException(
@@ -140,8 +169,16 @@ async def register(request: RegisterRequest, session: AsyncSession = Depends(get
         password_hash=hash_password(request.password)
     )
     session.add(user)
-    await session.commit()
-    await session.refresh(user)
+    try:
+        await session.commit()
+        await session.refresh(user)
+    except Exception as exc:
+        if _is_db_error(exc):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Database unavailable; please try again later.",
+            ) from exc
+        raise
 
     token = create_jwt_token(user.id)
     return RegisterResponse(access_token=token, user_id=user.id)
@@ -150,8 +187,9 @@ async def register(request: RegisterRequest, session: AsyncSession = Depends(get
 @router.post("/login/credentials", response_model=LoginResponse)
 async def login(request: LoginRequest, session: AsyncSession = Depends(get_db_session)):
     """Authenticate user and return JWT token."""
-    result = await session.execute(
-        select(User).where(User.username == request.username)
+    result = await _safe_execute(
+        session,
+        select(User).where(User.username == request.username),
     )
     user = result.scalars().first()
     
@@ -180,8 +218,16 @@ async def submit(
         status="uploading"
     )
     session.add(submission)
-    await session.commit()
-    await session.refresh(submission)
+    try:
+        await session.commit()
+        await session.refresh(submission)
+    except Exception as exc:
+        if _is_db_error(exc):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Database unavailable; please try again later.",
+            ) from exc
+        raise
     
     # Generate presigned URL
     client = get_gcs_client()
@@ -205,10 +251,11 @@ async def upload_complete(
     """Mark upload complete and publish to Queue 1."""
     
     # Get submission
-    result = await session.execute(
+    result = await _safe_execute(
+        session,
         select(Submission).where(
             (Submission.id == submission_id) & (Submission.user_id == user_id)
-        )
+        ),
     )
     submission = result.scalars().first()
     
@@ -220,7 +267,15 @@ async def upload_complete(
     
     # Update status
     submission.status = "queued_for_microVM_creation"
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception as exc:
+        if _is_db_error(exc):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Database unavailable; please try again later.",
+            ) from exc
+        raise
     
     # Publish to Queue 1
     publisher = get_pubsub_publisher()

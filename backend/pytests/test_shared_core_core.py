@@ -23,6 +23,19 @@ def test_get_db_url_uses_proxy_safe_defaults(monkeypatch):
     assert "connect_timeout=10" in url
 
 
+def test_get_db_url_accepts_host_with_explicit_port(monkeypatch):
+    monkeypatch.setenv("DB_USER", "appuser")
+    monkeypatch.setenv("DB_PASSWORD", "secret")
+    monkeypatch.setenv("DB_HOST", "10.219.0.3:5432")
+    monkeypatch.setenv("DB_NAME", "tradeforces")
+    monkeypatch.delenv("DB_PORT", raising=False)
+
+    url = get_db_url()
+
+    assert url.startswith("postgresql+asyncpg://appuser:secret@10.219.0.3:5432/tradeforces")
+    assert "sslmode=disable" in url
+
+
 def test_get_db_url_uses_cloud_sql_socket_path(monkeypatch):
     monkeypatch.setenv("DB_USER", "appuser")
     monkeypatch.setenv("DB_PASSWORD", "secret")

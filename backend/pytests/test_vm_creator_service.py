@@ -159,6 +159,42 @@ class TestVMCreatorTemplate:
 class TestVMCreatorWorker:
     """Regression tests for worker helpers."""
 
+    def test_telemetry_template_uses_runtime_pod_ip_with_fixed_ports(self):
+        """Telemetry env values should keep the fixed ports while using the runtime Pod IP."""
+        template_path = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "microservices",
+            "vm_creator",
+            "create_3_pods.tmpl",
+        )
+
+        with open(template_path, "r", encoding="utf-8") as handle:
+            rendered = Template(handle.read()).render(
+                submission_id=42,
+                user_id=7,
+                docker_image="example/image:latest",
+                namespace="tradeforces",
+                contestant_ingress_addr="10.0.0.13",
+                contestant_egress_addr="10.0.0.13",
+                shadow_egress_addr="shadow-42.tradeforces",
+                redpanda_brokers="broker:9092",
+                redpanda_orders_topic="orders",
+                redpanda_results_topic="results",
+                redpanda_sasl_username="user",
+                redpanda_sasl_password="pass",
+                redpanda_sasl_mechanism="SCRAM-SHA-256",
+            )
+
+        resources = list(yaml.safe_load_all(rendered))
+        telemetry = next(resource for resource in resources if resource["metadata"]["name"] == "telemetry-42")
+
+        env_map = {item["name"]: item["value"] for item in telemetry["spec"]["containers"][0]["env"]}
+
+        assert env_map["CONTESTANT_INGRESS_ADDR"] == "10.0.0.13:9100"
+        assert env_map["CONTESTANT_EGRESS_ADDR"] == "10.0.0.13:9101"
+        assert env_map["SHADOW_EGRESS_ADDR"] == "shadow-42.tradeforces:9100"
+
     def test_create_redpanda_topic_uses_kafka_admin_client(self, monkeypatch):
         """The worker should create Redpanda topics through the Kafka admin client."""
         worker_module = __import__(
@@ -227,8 +263,8 @@ class TestVMCreatorWorker:
         assert context["user_id"] == 7
         assert context["docker_image"] == "example/image:latest"
         assert context["namespace"] == "tradeforces"
-        assert context["contestant_ingress_addr"] == "microvm-42.tradeforces"
-        assert context["contestant_egress_addr"] == "microvm-42.tradeforces"
+        assert context["contestant_ingress_addr"] == "10.0.0.13"
+        assert context["contestant_egress_addr"] == "10.0.0.13"
         assert context["shadow_egress_addr"] == "shadow-42.tradeforces"
         assert context["redpanda_brokers"] == worker_module.settings.redpanda_bootstrap_servers
         assert context["redpanda_orders_topic"] == "42"

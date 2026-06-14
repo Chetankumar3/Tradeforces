@@ -38,4 +38,5 @@ COPY config/schema.json /etc/telemetry/schema.json
 EXPOSE 9092 9100 9101
 
 # 8. Execute the distinctly named binary
-CMD ["/app/telemetry-bin"]
+ENTRYPOINT ["/app/telemetry-bin"]
+CMD []

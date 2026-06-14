@@ -24,7 +24,7 @@ import (
 	"time"
 
 	kafka "github.com/segmentio/kafka-go"
-	"github.com/segmentio/kafka-go/sasl/plain"
+	"github.com/segmentio/kafka-go/sasl/scram"
 	"github.com/shirou/gopsutil/v3/cpu"
 )
 
@@ -171,7 +171,7 @@ func main() {
 
 func newRedpandaWriter(cfg config) (*kafka.Writer, error) {
 	if len(cfg.RedpandaBrokers) == 0 {
-		return nil, errors.New("REDPANDA_BROKERS is required")
+		return nil, errors.New("REDPANDA_BOOTSTRAP_SERVERS is required")
 	}
 	if cfg.TopicName == "" {
 		return nil, errors.New("TOPIC_NAME is required")
@@ -189,12 +189,13 @@ func newRedpandaWriter(cfg config) (*kafka.Writer, error) {
 
 	// If your Redpanda Cloud cluster needs TLS/SASL, wire it here.
 	if cfg.RedpandaUsername != "" {
+		mech, err := scram.Mechanism(scram.SHA256, cfg.RedpandaUsername, cfg.RedpandaPassword)
+		if err != nil {
+			return nil, fmt.Errorf("create scram mechanism: %w", err)
+		}
 		w.Transport = &kafka.Transport{
-			TLS: &tls.Config{},
-			SASL: plain.Mechanism{
-				Username: cfg.RedpandaUsername,
-				Password: cfg.RedpandaPassword,
-			},
+			TLS:  &tls.Config{},
+			SASL: mech,
 		}
 	}
 
@@ -986,7 +987,7 @@ func loadConfig() (config, error) {
 		CancelWeight:      getenvInt("CANCEL_WEIGHT", 15),
 	}
 	if len(cfg.RedpandaBrokers) == 0 {
-		return cfg, errors.New("REDPANDA_BROKERS is required")
+		return cfg, errors.New("REDPANDA_BOOTSTRAP_SERVERS is required")
 	}
 	if cfg.TopicName == "" {
 		return cfg, errors.New("TOPIC_NAME is required")

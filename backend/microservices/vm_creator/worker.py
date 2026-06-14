@@ -189,6 +189,26 @@ spec:
         logger.info(f"[CB] submission={submission_id} | build succeeded → {image_uri}")
         return image_uri
     
+    def _apply_runtime_address_overrides(
+        self,
+        manifest: Dict[str, Any],
+        pod_ip: str,
+        shadow_ip: Optional[str],
+    ) -> None:
+        """Override telemetry env values with the actual runtime Pod IPs."""
+        containers = manifest.get("spec", {}).get("containers", [])
+        if not containers:
+            return
+
+        for env in containers[0].get("env", []):
+            name = env.get("name")
+            if name == "CONTESTANT_INGRESS_ADDR":
+                env["value"] = f"{pod_ip}:9100"
+            elif name == "CONTESTANT_EGRESS_ADDR":
+                env["value"] = f"{pod_ip}:9101"
+            elif name == "SHADOW_EGRESS_ADDR" and shadow_ip:
+                env["value"] = f"{shadow_ip}:9100"
+
     def _build_render_context(
         self,
         submission_id: int,
@@ -197,10 +217,17 @@ spec:
         namespace: str,
         pod_ip: Optional[str],
         topic_name: str,
+        shadow_pod_ip: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Build the Jinja render context used by the manifest template."""
         contestant_host = f"microvm-{submission_id}.{namespace}" if namespace else f"microvm-{submission_id}"
         shadow_host = f"shadow-{submission_id}.{namespace}" if namespace else f"shadow-{submission_id}"
+
+        # Use the actual microVM Pod IP for telemetry dial targets once the Pod is running.
+        # The template still appends the fixed TCP ports (9100/9101), so only the IP portion
+        # changes at runtime.
+        contestant_addr = pod_ip or contestant_host
+        shadow_addr = shadow_pod_ip or shadow_host
 
         return {
             "submission_id": submission_id,
@@ -208,9 +235,9 @@ spec:
             "docker_image": docker_image,
             "namespace": namespace,
             "node_name": "",
-            "contestant_ingress_addr": contestant_host,
-            "contestant_egress_addr": contestant_host,
-            "shadow_egress_addr": shadow_host,
+            "contestant_ingress_addr": contestant_addr,
+            "contestant_egress_addr": contestant_addr,
+            "shadow_egress_addr": shadow_addr,
             "redpanda_brokers": settings.redpanda_bootstrap_servers,
             "redpanda_orders_topic": topic_name,
             "redpanda_results_topic": topic_name,
@@ -283,25 +310,61 @@ spec:
         if not node_name:
             raise RuntimeError("Unable to resolve the node name for the microVM pod")
 
-        for resource in resources[1:]:
-            kind = resource.get("kind", "").lower()
-            if kind == "deployment":
-                spec = resource.setdefault("spec", {})
-                template_spec = spec.setdefault("template", {}).setdefault("spec", {})
-                template_spec.setdefault("nodeSelector", {})["kubernetes.io/hostname"] = node_name
-                self.k8s_apps_client.create_namespaced_deployment(
-                    namespace=settings.k3s_namespace,
-                    body=resource
-                )
-                logger.info(f"Created deployment {resource['metadata']['name']} on node {node_name}")
-            elif kind == "pod":
-                spec = resource.setdefault("spec", {})
+        telemetry_manifest = resources[1] if len(resources) > 1 else None
+        shadow_manifest = resources[2] if len(resources) > 2 else None
+
+        if shadow_manifest is not None:
+            kind = shadow_manifest.get("kind", "").lower()
+            if kind == "pod":
+                spec = shadow_manifest.setdefault("spec", {})
                 spec.setdefault("nodeSelector", {})["kubernetes.io/hostname"] = node_name
                 self.k8s_client.create_namespaced_pod(
                     namespace=settings.k3s_namespace,
-                    body=resource
+                    body=shadow_manifest,
                 )
-                logger.info(f"Created pod {resource['metadata']['name']} on node {node_name}")
+                logger.info(f"Created shadow pod {shadow_manifest['metadata']['name']} on node {node_name}")
+                shadow_pod_ip = await self._wait_for_pod_running(shadow_manifest['metadata']['name'])
+            else:
+                shadow_pod_ip = None
+        else:
+            shadow_pod_ip = None
+
+        if telemetry_manifest is not None:
+            self._apply_runtime_address_overrides(
+                telemetry_manifest,
+                pod_ip=pod_ip,
+                shadow_ip=shadow_pod_ip,
+            )
+
+            kind = telemetry_manifest.get("kind", "").lower()
+            if kind == "pod":
+                spec = telemetry_manifest.setdefault("spec", {})
+                spec.setdefault("nodeSelector", {})["kubernetes.io/hostname"] = node_name
+                self.k8s_client.create_namespaced_pod(
+                    namespace=settings.k3s_namespace,
+                    body=telemetry_manifest,
+                )
+                logger.info(f"Created telemetry pod {telemetry_manifest['metadata']['name']} on node {node_name}")
+
+        if shadow_manifest is not None and shadow_manifest.get("kind", "").lower() == "deployment":
+            spec = shadow_manifest.setdefault("spec", {})
+            template_spec = spec.setdefault("template", {}).setdefault("spec", {})
+            template_spec.setdefault("nodeSelector", {})["kubernetes.io/hostname"] = node_name
+            self.k8s_apps_client.create_namespaced_deployment(
+                namespace=settings.k3s_namespace,
+                body=shadow_manifest,
+            )
+            logger.info(f"Created deployment {shadow_manifest['metadata']['name']} on node {node_name}")
+
+        if telemetry_manifest is not None and telemetry_manifest.get("kind", "").lower() == "deployment":
+            spec = telemetry_manifest.setdefault("spec", {})
+            template_spec = spec.setdefault("template", {}).setdefault("spec", {})
+            template_spec.setdefault("nodeSelector", {})["kubernetes.io/hostname"] = node_name
+            self.k8s_apps_client.create_namespaced_deployment(
+                namespace=settings.k3s_namespace,
+                body=telemetry_manifest,
+            )
+            logger.info(f"Created deployment {telemetry_manifest['metadata']['name']} on node {node_name}")
 
         microvm_name = microvm_manifest.get("metadata", {}).get("name") or f"microvm-{submission_id}"
         telemetry_name = resources[1].get("metadata", {}).get("name") if len(resources) > 1 else f"telemetry-deployment-{submission_id}"

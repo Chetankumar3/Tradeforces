@@ -32,7 +32,7 @@ import (
 type config struct {
 	Namespace           string
 	ListenAddr          string
-	ControllerURL       string
+	ControllerPodIP     string
 	RunnerPods          int
 	BotsPerPod          int
 	SchedulerTickMS     int
@@ -454,10 +454,10 @@ func waitForAllRunnersReady(ctx context.Context, cfg config, client kubernetes.I
 		if state.readyCount() == cfg.RunnerPods {
 			return nil
 		}
-		failed, err := jobFailed(ctx, cfg, client, jobName);
+		failed, err := jobFailed(ctx, cfg, client, jobName)
 		log.Printf("job failed? boolean: %t", failed)
 		log.Printf("job error: %v", err)
-		
+
 		if err != nil {
 			return err
 		} else if failed {
@@ -544,19 +544,28 @@ func buildRunnerJob(cfg config, queued queueJob, topicName string) *batchv1.Job 
 }
 
 func buildRunnerContainer(cfg config, queued queueJob, topicName string) corev1.Container {
+	controllerURL := ""
+
+	if cfg.ControllerPodIP != "" {
+		controllerURL = "http://" + cfg.ControllerPodIP + cfg.ListenAddr
+	} else {
+		controllerURL = "http://benchmark-controller:8080"
+	}
+
+	log.Printf("CONTROLLER_URL=%s", controllerURL)
 	container := corev1.Container{
 		Name:            "bot-runner",
 		Image:           cfg.RunnerImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Env: []corev1.EnvVar{
 			{Name: "RUN_ID", Value: queued.RunID},
-			{Name: "SUBMISSION_ID", Value: queued.SubmissionID},      // NEW
-			{Name: "TOPIC_NAME", Value: topicName},                   // NEW
-			{Name: "REDPANDA_BOOTSTRAP_SERVERS", Value: cfg.RedpandaBrokers},   // NEW
-			{Name: "REDPANDA_SASL_USERNAME", Value: cfg.RedpandaUsername}, // NEW
-			{Name: "REDPANDA_SASL_PASSWORD", Value: cfg.RedpandaPassword}, // NEW
+			{Name: "SUBMISSION_ID", Value: queued.SubmissionID},              // NEW
+			{Name: "TOPIC_NAME", Value: topicName},                           // NEW
+			{Name: "REDPANDA_BOOTSTRAP_SERVERS", Value: cfg.RedpandaBrokers}, // NEW
+			{Name: "REDPANDA_SASL_USERNAME", Value: cfg.RedpandaUsername},    // NEW
+			{Name: "REDPANDA_SASL_PASSWORD", Value: cfg.RedpandaPassword},    // NEW
 
-			{Name: "CONTROLLER_URL", Value: cfg.ControllerURL},
+			{Name: "CONTROLLER_URL", Value: controllerURL},
 			{Name: "BOTS_PER_POD", Value: strconv.Itoa(cfg.BotsPerPod)},
 			{Name: "SCHEDULER_TICK_MS", Value: strconv.Itoa(cfg.SchedulerTickMS)},
 			{Name: "PHASES_JSON", Value: cfg.PhasesJSON},
@@ -646,7 +655,7 @@ func deleteDeploymentIfExists(
 	ctx context.Context,
 	client kubernetes.Interface,
 	namespace string,
-	DeplymentName string,
+	DeploymentName string,
 ) error {
 
 	propagation := metav1.DeletePropagationForeground
@@ -655,7 +664,7 @@ func deleteDeploymentIfExists(
 		Deployments(namespace).
 		Delete(
 			ctx,
-			DeplymentName,
+			DeploymentName,
 			metav1.DeleteOptions{
 				PropagationPolicy: &propagation,
 			},
@@ -792,16 +801,17 @@ func newKubeClient() (kubernetes.Interface, error) {
 
 func loadConfig() (config, error) {
 	cfg := config{
-		Namespace:           getenv("NAMESPACE", currentNamespace()),
+		Namespace:           getenv("K3S_NAMESPACE", currentNamespace()),
 		ListenAddr:          getenv("LISTEN_ADDR", ":8080"),
-		ControllerURL:       getenv("CONTROLLER_URL", "http://benchmark-controller:8080"),
+		ControllerPodIP:     getenv("CONTROLLER_POD_IP", ""),
 		RunnerPods:          getenvInt("RUNNER_PODS", 3),
 		BotsPerPod:          getenvInt("BOTS_PER_POD", 100),
 		SchedulerTickMS:     getenvInt("SCHEDULER_TICK_MS", 20),
 		StartDelay:          time.Duration(getenvInt("START_DELAY_MS", 5000)) * time.Millisecond,
-		GCPProjectID:        strings.TrimSpace(os.Getenv("GCP_PROJECT_ID")),
+		GCPProjectID:        strings.TrimSpace(os.Getenv("PROJECT_ID")),
 		PubSubSubscription:  getenv("QUEUE2_SUBSCRIPTION_NAME", "queue2-sub"),
 		RunnerMode:          getenv("RUNNER_MODE", "source"),
+		RunnerImage:         getenv("RUNNER_IMAGE", "bot-runner:latest"),
 		RunnerCPURequest:    getenv("RUNNER_CPU_REQUEST", "500m"),
 		RunnerMemoryRequest: getenv("RUNNER_MEMORY_REQUEST", "256Mi"),
 		RunnerCPULimit:      getenv("RUNNER_CPU_LIMIT", "1"),
@@ -824,7 +834,7 @@ func loadConfig() (config, error) {
 		return cfg, errors.New("START_DELAY_MS must be greater than zero")
 	}
 	if cfg.GCPProjectID == "" {
-		return cfg, errors.New("GCP_PROJECT_ID is required")
+		return cfg, errors.New("PROJECT_ID is required")
 	}
 	if cfg.PubSubSubscription == "" {
 		return cfg, errors.New("QUEUE2_SUBSCRIPTION_NAME is required")

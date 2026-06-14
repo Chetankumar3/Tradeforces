@@ -120,14 +120,16 @@ spec:
   containers:
   - name: telemetry-container
     image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1
+    imagePullPolicy: Always
+    command: ["/app/telemetry-bin"]
     ports:
       - name: redpanda
         containerPort: 9092
         protocol: TCP
-      - name: contestant-ingress
+      - name: c-ingress
         containerPort: 9100
         protocol: TCP
-      - name: contestant-egress
+      - name: c-egress
         containerPort: 9101
         protocol: TCP
     env:
@@ -135,20 +137,8 @@ spec:
       value: "{{ submission_id }}"
     - name: USER_ID
       value: "{{ user_id }}"
-    - name: REDPANDA_BOOTSTRAP_SERVERS
-      value: "{{ redpanda_brokers }}"
-    - name: REDPANDA_BROKERS
-      value: "{{ redpanda_brokers }}"
     - name: REDPANDA_ORDERS_TOPIC
       value: "{{ redpanda_orders_topic }}"
-    - name: REDPANDA_RESULTS_TOPIC
-      value: "{{ redpanda_results_topic }}"
-    - name: REDPANDA_SASL_USERNAME
-      value: "{{ redpanda_sasl_username }}"
-    - name: REDPANDA_SASL_PASSWORD
-      value: "{{ redpanda_sasl_password }}"
-    - name: REDPANDA_SASL_MECHANISM
-      value: "{{ redpanda_sasl_mechanism }}"
     - name: CONTESTANT_INGRESS_ADDR
       value: "{{ contestant_ingress_addr }}:9100"
     - name: CONTESTANT_EGRESS_ADDR
@@ -192,6 +182,8 @@ spec:
   containers:
   - name: shadow-container
     image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1
+    imagePullPolicy: Always
+    command: ["/app/fix_gateway"]
     ports:
     - name: admin
       containerPort: 8080
@@ -204,20 +196,8 @@ spec:
     env:
     - name: SUBMISSION_ID
       value: "{{ submission_id }}"
-    - name: REDPANDA_BOOTSTRAP_SERVERS
-      value: "{{ redpanda_brokers }}"
-    - name: REDPANDA_BROKERS
-      value: "{{ redpanda_brokers }}"
     - name: REDPANDA_ORDERS_TOPIC
       value: "{{ redpanda_orders_topic }}"
-    - name: REDPANDA_RESULTS_TOPIC
-      value: "{{ redpanda_results_topic }}"
-    - name: REDPANDA_SASL_USERNAME
-      value: "{{ redpanda_sasl_username }}"
-    - name: REDPANDA_SASL_PASSWORD
-      value: "{{ redpanda_sasl_password }}"
-    - name: REDPANDA_SASL_MECHANISM
-      value: "{{ redpanda_sasl_mechanism }}"
     envFrom:
     - configMapRef:
         name: app-env

@@ -195,8 +195,12 @@ spec:
           image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-benchmark-controller:1.1
           imagePullPolicy: Always
           env:
-            - name: NAMESPACE
-              value: "default"
+            - name: CONTROLLER_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: LISTEN_ADDR
+              value: ":8080"
             - name: CONTROLLER_URL
               value: "http://benchmark-controller:8080"
             - name: RUNNER_PODS
@@ -207,16 +211,20 @@ spec:
               value: "20"
             - name: START_DELAY_MS
               value: "5000"
-            - name: GCP_PROJECT_ID
-              value: "project-cdd074dc-6291-4d7f-a2a"
-            - name: PUBSUB_SUBSCRIPTION
-              value: "queue2-6291-subscription"
             - name: RUNNER_MODE
               value: "image"
             - name: RUNNER_IMAGE
               value: "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-bot-runner:1.1"
             - name: PHASES_JSON
               value: '[{"name":"steady","duration_seconds":20,"active_bots":100,"rps":500}]'
+            - name: RUNNER_CPU_REQUEST
+              value: "500m"
+            - name: RUNNER_MEMORY_REQUEST
+              value: "256Mi"
+            - name: RUNNER_CPU_LIMIT
+              value: "1"
+            - name: RUNNER_MEMORY_LIMIT
+              value: "768Mi"
           ports:
             - containerPort: 8080
           envFrom:

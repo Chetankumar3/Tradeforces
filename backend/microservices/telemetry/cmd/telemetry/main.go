@@ -8,11 +8,13 @@ package main
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/iicpc/telemetry/internal/goroutines"
 	"github.com/iicpc/telemetry/internal/types"
@@ -106,16 +108,36 @@ func newLogger(path string) *log.Logger {
 }
 
 // dialTCP dials a TCP address and asserts to *net.TCPConn (needed for SyscallConn).
+// It retries with exponential backoff so the telemetry service can boot even when
+// the engine pods are still binding their TCP listeners.
 func dialTCP(addr string) *net.TCPConn {
-	conn, err := net.Dial("tcp", addr)
-	if err != nil {
-		panic(err)
+	const (
+		maxAttempts = 8
+		baseDelay   = 250 * time.Millisecond
+		dialTimeout = 5 * time.Second
+	)
+
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		conn, err := net.DialTimeout("tcp", addr, dialTimeout)
+		if err == nil {
+			tcp, ok := conn.(*net.TCPConn)
+			if !ok {
+				_ = conn.Close()
+				panic("dialTCP: expected *net.TCPConn for " + addr)
+			}
+			return tcp
+		}
+
+		lastErr = err
+		if attempt < maxAttempts {
+			delay := time.Duration(attempt) * baseDelay
+			log.Printf("dialTCP: waiting for %s (attempt %d/%d): %v; retrying in %s", addr, attempt, maxAttempts, err, delay)
+			time.Sleep(delay)
+		}
 	}
-	tcp, ok := conn.(*net.TCPConn)
-	if !ok {
-		panic("dialTCP: expected *net.TCPConn for " + addr)
-	}
-	return tcp
+
+	panic(fmt.Sprintf("dialTCP: failed to connect to %s after %d attempts: %v", addr, maxAttempts, lastErr))
 }
 
 // loadSchema reads and JSON-decodes the output-field schema map.
@@ -135,7 +157,7 @@ func loadSchema(path string) map[string]string {
 // missing or malformed value. No goroutine ever calls os.Getenv directly.
 func loadConfig() *types.Config {
 	return &types.Config{
-		RedpandaBrokers:  mustStr("REDPANDA_BOOTSTRAP_SERVERS"),
+		RedpandaBrokers:  mustStr("REDPANDA_BOOTSTRAP_SERVERS", "REDPANDA_BROKERS"),
 		RPUser:           mustStr("REDPANDA_SASL_USERNAME"),
 		RPPass:           mustStr("REDPANDA_SASL_PASSWORD"),
 		OrdersTopic:      mustStr("REDPANDA_ORDERS_TOPIC"),
@@ -163,12 +185,13 @@ func loadConfig() *types.Config {
 
 // --- env parsing helpers: panic immediately on missing/invalid values ---
 
-func mustStr(key string) string {
-	v, ok := os.LookupEnv(key)
-	if !ok || v == "" {
-		panic("missing required env var: " + key)
+func mustStr(keys ...string) string {
+	for _, key := range keys {
+		if v, ok := os.LookupEnv(key); ok && strings.TrimSpace(v) != "" {
+			return v
+		}
 	}
-	return v
+	panic("missing required env var: one of " + strings.Join(keys, ", "))
 }
 
 func mustInt(key string) int {

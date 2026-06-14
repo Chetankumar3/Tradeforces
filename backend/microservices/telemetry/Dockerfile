@@ -34,5 +34,8 @@ COPY --from=builder /out/telemetry-bin /app/telemetry-bin
 RUN mkdir -p /etc/telemetry
 COPY config/schema.json /etc/telemetry/schema.json
 
+# Telemetry is a TCP client to the contestant/shadow engines and to Redpanda.
+EXPOSE 9092 9100 9101
+
 # 8. Execute the distinctly named binary
 CMD ["/app/telemetry-bin"]

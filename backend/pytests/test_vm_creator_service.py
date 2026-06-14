@@ -151,8 +151,8 @@ class TestVMCreatorTemplate:
         assert all(resource["kind"] == "Pod" for resource in resources)
         assert [resource["metadata"]["name"] for resource in resources] == [
             "microvm-42",
-            "telemetry-deployment-42",
-            "shadow-deployment-42",
+            "telemetry-42",
+            "shadow-42",
         ]
 
 
@@ -211,7 +211,8 @@ class TestVMCreatorWorker:
 
     def test_build_render_context_populates_required_env_values(self):
         """The manifest render context should include the required topic and port-address values."""
-        worker = object.__new__(__import__("microservices.vm_creator.worker", fromlist=["VMCreatorWorker"]).VMCreatorWorker)
+        worker_module = __import__("microservices.vm_creator.worker", fromlist=["VMCreatorWorker"])
+        worker = object.__new__(worker_module.VMCreatorWorker)
 
         context = worker._build_render_context(
             submission_id=42,
@@ -226,10 +227,12 @@ class TestVMCreatorWorker:
         assert context["user_id"] == 7
         assert context["docker_image"] == "example/image:latest"
         assert context["namespace"] == "tradeforces"
-        assert context["contestant_ingress_addr"] == "10.0.0.13"
-        assert context["contestant_egress_addr"] == "10.0.0.13"
-        assert context["shadow_egress_addr"] == "10.0.0.13"
+        assert context["contestant_ingress_addr"] == "microvm-42.tradeforces"
+        assert context["contestant_egress_addr"] == "microvm-42.tradeforces"
+        assert context["shadow_egress_addr"] == "shadow-42.tradeforces"
+        assert context["redpanda_brokers"] == worker_module.settings.redpanda_bootstrap_servers
         assert context["redpanda_orders_topic"] == "42"
+        assert context["redpanda_results_topic"] == "42"
 
     def test_wait_for_pod_running_waits_for_ip(self, monkeypatch):
         """The worker should not return until the Pod has an assigned IP."""

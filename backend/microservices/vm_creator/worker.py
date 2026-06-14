@@ -199,16 +199,24 @@ spec:
         topic_name: str,
     ) -> Dict[str, Any]:
         """Build the Jinja render context used by the manifest template."""
+        contestant_host = f"microvm-{submission_id}.{namespace}" if namespace else f"microvm-{submission_id}"
+        shadow_host = f"shadow-{submission_id}.{namespace}" if namespace else f"shadow-{submission_id}"
+
         return {
             "submission_id": submission_id,
             "user_id": user_id,
             "docker_image": docker_image,
             "namespace": namespace,
             "node_name": "",
-            "contestant_ingress_addr": pod_ip or "",
-            "contestant_egress_addr": pod_ip or "",
-            "shadow_egress_addr": pod_ip or "",
+            "contestant_ingress_addr": contestant_host,
+            "contestant_egress_addr": contestant_host,
+            "shadow_egress_addr": shadow_host,
+            "redpanda_brokers": settings.redpanda_bootstrap_servers,
             "redpanda_orders_topic": topic_name,
+            "redpanda_results_topic": topic_name,
+            "redpanda_sasl_username": settings.redpanda_sasl_username,
+            "redpanda_sasl_password": settings.redpanda_sasl_password,
+            "redpanda_sasl_mechanism": settings.redpanda_sasl_mechanism,
         }
 
     async def deploy_pod(

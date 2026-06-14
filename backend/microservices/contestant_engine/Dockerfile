@@ -56,6 +56,8 @@ COPY config /app/config
 ENV PATH="/app:$PATH" \
     PYTHONUNBUFFERED=1
 
-EXPOSE 8080 9876 9100 9101
+# Runtime listeners used by the contestant engine:
+# 8080 (admin), 9100 (ingress), 9101 (egress), 9876 (FIX/session port)
+EXPOSE 8080 9100 9101 9876
 
 CMD ["/app/fix_gateway"]

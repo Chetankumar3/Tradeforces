@@ -1,8 +1,11 @@
 import os
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from shared_core import core as core_module
 from shared_core.core import get_db_url
 
 
@@ -31,3 +34,13 @@ def test_get_db_url_uses_cloud_sql_socket_path(monkeypatch):
 
     assert url.startswith("postgresql+asyncpg://appuser:secret@/tradeforces")
     assert "host=%2Fcloudsql%2Fproject%3Aregion%3Ainstance" in url
+
+
+@pytest.mark.asyncio
+async def test_init_db_returns_false_when_database_unavailable(monkeypatch):
+    def fail_create_engine(*_args, **_kwargs):
+        raise OSError("[Errno -2] Name or service not known")
+
+    monkeypatch.setattr(core_module, "create_async_db_engine", fail_create_engine)
+
+    assert await core_module.init_db() is False

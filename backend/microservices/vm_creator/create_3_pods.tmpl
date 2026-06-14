@@ -49,7 +49,13 @@ spec:
     
     ports:
     - name: http
-      containerPort: 8000
+      containerPort: 8080
+      protocol: TCP
+    - name: ingress
+      containerPort: 9100
+      protocol: TCP
+    - name: egress
+      containerPort: 9101
       protocol: TCP
     
     resources:
@@ -81,8 +87,8 @@ spec:
 
 ---
 # Template for telemetry pod
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
   name: telemetry-deployment-{{ submission_id }}
   labels:
@@ -90,60 +96,54 @@ metadata:
     user-id: "{{ user_id }}"
     app: telemetry
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      submission-id: "{{ submission_id }}"
-      user-id: "{{ user_id }}"
-      app: telemetry
-  template:
-    metadata:
-      labels:
-        submission-id: "{{ submission_id }}"
-        user-id: "{{ user_id }}"
-        app: telemetry
-    spec:
-      imagePullSecrets:
-      - name: gar-secret
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - topologyKey: kubernetes.io/hostname
-            labelSelector:
-              matchExpressions:
-              - key: submission-id
-                operator: In
-                values:
-                - "{{ submission_id }}"
-              - key: app
-                operator: In
-                values:
-                - tradeforces-submission
-      containers:
-      - name: telemetry-container
-        image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1
-        env:
-        - name: SUBMISSION_ID
-          value: "{{ submission_id }}"
-        - name: USER_ID
-          value: "{{ user_id }}"
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        envFrom:
-        - configMapRef:
-            name: app-env
+  imagePullSecrets:
+  - name: gar-secret
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 30
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchExpressions:
+          - key: submission-id
+            operator: In
+            values:
+            - "{{ submission_id }}"
+          - key: app
+            operator: In
+            values:
+            - tradeforces-submission
+  containers:
+  - name: telemetry-container
+    image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1
+    ports:
+      - containerPort: 9001
+      - containerPort: 9002
+      - containerPort: 9003
+      - containerPort: 9092
+    env:
+    - name: SUBMISSION_ID
+      value: "{{ submission_id }}"
+    - name: USER_ID
+      value: "{{ user_id }}"
+    - name: CONTESTANT_INGRESS_ADDR
+      value: "{{ contestant_ingress_addr }}:9100"
+    - name: CONTESTANT_EGRESS_ADDR
+      value: "{{ contestant_egress_addr }}:9101"
+    - name: SHADOW_EGRESS_ADDR
+      value: "{{ shadow_egress_addr }}:9100"
+    - name: REDPANDA_ORDERS_TOPIC
+      value: "{{ redpanda_orders_topic }}"
+    envFrom:
+    - configMapRef:
+        name: app-env
 
 
 ---
 # Template for shadow_engine pod
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
   name: shadow-deployment-{{ submission_id }}
   labels:
@@ -151,60 +151,39 @@ metadata:
     user-id: "{{ user_id }}"
     app: shadow
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      submission-id: "{{ submission_id }}"
-      user-id: "{{ user_id }}"
-      app: shadow
-  template:
-    metadata:
-      labels:
-        submission-id: "{{ submission_id }}"
-        user-id: "{{ user_id }}"
-        app: shadow
-    spec:
-      imagePullSecrets:
-      - name: gar-secret
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - topologyKey: kubernetes.io/hostname
-            labelSelector:
-              matchExpressions:
-              - key: submission-id
-                operator: In
-                values:
-                - "{{ submission_id }}"
-              - key: app
-                operator: In
-                values:
-                - tradeforces-submission
-      containers:
-      - name: shadow-container
-        image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1
-        ports:
-        - name: admin
-          containerPort: 8080
-        - name: fix
-          containerPort: 9876
-        - name: telemetry
-          containerPort: 9100
-        env:
-        - name: SUBMISSION_ID
-          value: "{{ submission_id }}"
-        - name: TELEMETRY_HOST
-          value: "0.0.0.0"
-        - name: TELEMETRY_PORT
-          value: "9100"
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        envFrom:
-        - configMapRef:
-            name: app-env
+  imagePullSecrets:
+  - name: gar-secret
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 30
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchExpressions:
+          - key: submission-id
+            operator: In
+            values:
+            - "{{ submission_id }}"
+          - key: app
+            operator: In
+            values:
+            - tradeforces-submission
+  containers:
+  - name: shadow-container
+    image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1
+    ports:
+    - name: admin
+      containerPort: 8080
+    - name: redpanda
+      containerPort: 9092
+    - name: fix
+      containerPort: 9876
+    - name: telemetry
+      containerPort: 9100
+    env:
+    - name: SUBMISSION_ID
+      value: "{{ submission_id }}"
+    envFrom:
+    - configMapRef:
+        name: app-env

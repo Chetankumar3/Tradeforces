@@ -13,11 +13,13 @@ async def lifespan(app: FastAPI):
     """Application lifespan."""
     print("Main service starting...")
     try:
-        await init_db()
-        print("Database schema initialized.")
+        db_ready = await init_db()
+        if db_ready:
+            print("Database schema initialized.")
+        else:
+            print("Database unavailable at startup; continuing without DB initialization.")
     except Exception as exc:
-        print(f"Database initialization failed: {exc}")
-        raise
+        print(f"Database initialization unavailable, continuing without DB: {exc}")
     yield
     print("Main service shutting down...")
 

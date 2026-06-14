@@ -1,10 +1,14 @@
 """Tests for vm_creator service."""
 
-import pytest
-import sys
+import asyncio
 import os
-import json
+import sys
+from types import SimpleNamespace
+
+import pytest
+import yaml
 from fastapi.testclient import TestClient
+from jinja2 import Template
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "microservices", "vm_creator"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -118,6 +122,86 @@ class TestSchemaMapper:
         assert internal_data["telemetry_pod-name"] == "telemetry-pod-123"
         assert internal_data["shadow_pod-name"] == "shadow-pod-123"
         assert internal_data["topic_name"] == "123"
+
+
+class TestVMCreatorTemplate:
+    """Validate the manifest template used by the VM creator worker."""
+
+    def test_template_renders_three_pod_resources(self):
+        """All three resources in the manifest should be Pods, not Deployments."""
+        template_path = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "microservices",
+            "vm_creator",
+            "create_3_pods.tmpl",
+        )
+
+        with open(template_path, "r", encoding="utf-8") as handle:
+            rendered = Template(handle.read()).render(
+                submission_id=42,
+                user_id=7,
+                docker_image="example/image:latest",
+                namespace="tradeforces",
+            )
+
+        resources = list(yaml.safe_load_all(rendered))
+
+        assert len(resources) == 3
+        assert all(resource["kind"] == "Pod" for resource in resources)
+        assert [resource["metadata"]["name"] for resource in resources] == [
+            "microvm-42",
+            "telemetry-deployment-42",
+            "shadow-deployment-42",
+        ]
+
+
+class TestVMCreatorWorker:
+    """Regression tests for worker helpers."""
+
+    def test_build_render_context_populates_required_env_values(self):
+        """The manifest render context should include the required topic and port-address values."""
+        worker = object.__new__(__import__("microservices.vm_creator.worker", fromlist=["VMCreatorWorker"]).VMCreatorWorker)
+
+        context = worker._build_render_context(
+            submission_id=42,
+            user_id=7,
+            docker_image="example/image:latest",
+            namespace="tradeforces",
+            pod_ip="10.0.0.13",
+            topic_name="42",
+        )
+
+        assert context["submission_id"] == 42
+        assert context["user_id"] == 7
+        assert context["docker_image"] == "example/image:latest"
+        assert context["namespace"] == "tradeforces"
+        assert context["contestant_ingress_addr"] == "10.0.0.13"
+        assert context["contestant_egress_addr"] == "10.0.0.13"
+        assert context["shadow_egress_addr"] == "10.0.0.13"
+        assert context["redpanda_orders_topic"] == "42"
+
+    def test_wait_for_pod_running_waits_for_ip(self, monkeypatch):
+        """The worker should not return until the Pod has an assigned IP."""
+        worker = object.__new__(__import__("microservices.vm_creator.worker", fromlist=["VMCreatorWorker"]).VMCreatorWorker)
+
+        responses = iter([
+            SimpleNamespace(status=SimpleNamespace(phase="Running", pod_ip=None), metadata=SimpleNamespace(name="microvm-42")),
+            SimpleNamespace(status=SimpleNamespace(phase="Running", pod_ip="10.0.0.5"), metadata=SimpleNamespace(name="microvm-42")),
+        ])
+
+        worker.k8s_client = SimpleNamespace(
+            read_namespaced_pod=lambda name, namespace: next(responses)
+        )
+
+        async def fake_sleep(_seconds):
+            return None
+
+        monkeypatch.setattr(asyncio, "sleep", fake_sleep)
+
+        pod_ip = asyncio.run(worker._wait_for_pod_running("microvm-42"))
+
+        assert pod_ip == "10.0.0.5"
 
 
 class TestJWTAuth:

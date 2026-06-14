@@ -8,8 +8,8 @@
     "submission_id": "submission_id",
     "user_id": "team_id",
     "topic_name": "topic_name",
-    "microvm_deployment_name": "microvm_deployment_name",
-    "telemetry_deployment_name": "telemetry_deployment_name",
-    "shadow_deployment_name": "shadow_deployment_name"
+    "microvm_pod-name": "microvm_pod_name",
+    "telemetry_pod-name": "telemetry_pod_name",
+    "shadow_pod-name": "shadow_pod_name"
   }
 }

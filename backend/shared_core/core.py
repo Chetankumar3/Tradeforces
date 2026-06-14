@@ -1,5 +1,6 @@
 """Database configuration and session management."""
 
+import logging
 import os
 from urllib.parse import quote, quote_plus
 
@@ -7,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from shared_core.DB_models import Base
+
+logger = logging.getLogger(__name__)
 
 
 def get_db_url() -> str:
@@ -63,11 +66,20 @@ def async_sessionmaker_factory():
     return _session_factory
 
 
-async def init_db() -> None:
+async def init_db() -> bool:
     """Ensure the database schema exists before serving requests."""
-    engine = create_async_db_engine()
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        engine = create_async_db_engine()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database schema initialized.")
+        return True
+    except Exception as exc:
+        logger.warning(
+            "Database initialization skipped because the database is unavailable: %s",
+            exc,
+        )
+        return False
 
 
 async def get_async_session():

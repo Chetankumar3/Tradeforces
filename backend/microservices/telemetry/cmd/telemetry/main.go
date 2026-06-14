@@ -135,9 +135,9 @@ func loadSchema(path string) map[string]string {
 // missing or malformed value. No goroutine ever calls os.Getenv directly.
 func loadConfig() *types.Config {
 	return &types.Config{
-		RedpandaBrokers:  mustStr("REDPANDA_BROKERS"),
-		RPUser:           mustStr("REDPANDA_USER"),
-		RPPass:           mustStr("REDPANDA_PASS"),
+		RedpandaBrokers:  mustStr("REDPANDA_BOOTSTRAP_SERVERS"),
+		RPUser:           mustStr("REDPANDA_SASL_USERNAME"),
+		RPPass:           mustStr("REDPANDA_SASL_PASSWORD"),
 		OrdersTopic:      mustStr("REDPANDA_ORDERS_TOPIC"),
 		ResultsTopic:     mustStr("REDPANDA_RESULTS_TOPIC"),
 		IngressAddr:      mustStr("CONTESTANT_INGRESS_ADDR"),

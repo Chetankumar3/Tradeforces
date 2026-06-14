@@ -67,9 +67,9 @@ type pubSubJobMessage struct {
 	SubmissionID string `json:"submission_id"`
 	TeamID       string `json:"team_id"`
 	TopicName    string `json:"topic_name"`
-	MicroVMPod   string `json:"microvm_deployment_name"`
-	TelemetryPod string `json:"telemetry_deployment_name"`
-	ShadowPod    string `json:"shadow_deployment_name"`
+	MicroVMPod   string `json:"microvm_pod_name"`
+	TelemetryPod    string `json:"telemetry_pod_name"`
+	ShadowPod    string `json:"shadow_pod_name"`
 }
 
 type readyRequest struct {
@@ -341,7 +341,7 @@ func parseQueueMessage(cfg config, msg *pubsub.Message) (queueJob, error) {
 	payload.TelemetryPod = strings.TrimSpace(payload.TelemetryPod)
 	payload.ShadowPod = strings.TrimSpace(payload.ShadowPod)
 	if payload.SubmissionID == "" || payload.TeamID == "" || payload.TopicName == "" || payload.MicroVMPod == "" || payload.TelemetryPod == "" || payload.ShadowPod == "" {
-		return queueJob{}, errors.New("submission_id, team_id, topic_name, microvm_deployment_name, telemetry_deployment_name, and shadow_deployment_name are required")
+		return queueJob{}, errors.New("submission_id, team_id, topic_name, microvm_pod_name, shadow_pod_name, and telemetry_pod_name are required")
 	}
 
 	return queueJob{
@@ -543,9 +543,9 @@ func buildRunnerContainer(cfg config, queued queueJob, topicName string) corev1.
 			{Name: "RUN_ID", Value: queued.RunID},
 			{Name: "SUBMISSION_ID", Value: queued.SubmissionID},      // NEW
 			{Name: "TOPIC_NAME", Value: topicName},                   // NEW
-			{Name: "REDPANDA_BROKERS", Value: cfg.RedpandaBrokers},   // NEW
-			{Name: "REDPANDA_USERNAME", Value: cfg.RedpandaUsername}, // NEW
-			{Name: "REDPANDA_PASSWORD", Value: cfg.RedpandaPassword}, // NEW
+			{Name: "REDPANDA_BOOTSTRAP_SERVERS", Value: cfg.RedpandaBrokers},   // NEW
+			{Name: "REDPANDA_SASL_USERNAME", Value: cfg.RedpandaUsername}, // NEW
+			{Name: "REDPANDA_SASL_PASSWORD", Value: cfg.RedpandaPassword}, // NEW
 
 			{Name: "CONTROLLER_URL", Value: cfg.ControllerURL},
 			{Name: "BOTS_PER_POD", Value: strconv.Itoa(cfg.BotsPerPod)},
@@ -791,7 +791,7 @@ func loadConfig() (config, error) {
 		SchedulerTickMS:     getenvInt("SCHEDULER_TICK_MS", 20),
 		StartDelay:          time.Duration(getenvInt("START_DELAY_MS", 5000)) * time.Millisecond,
 		GCPProjectID:        strings.TrimSpace(os.Getenv("GCP_PROJECT_ID")),
-		PubSubSubscription:  getenv("PUBSUB_SUBSCRIPTION", "queue2-sub"),
+		PubSubSubscription:  getenv("QUEUE2_SUBSCRIPTION_NAME", "queue2-sub"),
 		RunnerMode:          getenv("RUNNER_MODE", "source"),
 		RunnerImage:         getenv("RUNNER_IMAGE", "bot-runner:latest"),
 		RunnerCPURequest:    getenv("RUNNER_CPU_REQUEST", "500m"),
@@ -799,12 +799,12 @@ func loadConfig() (config, error) {
 		RunnerCPULimit:      getenv("RUNNER_CPU_LIMIT", "1"),
 		RunnerMemoryLimit:   getenv("RUNNER_MEMORY_LIMIT", "768Mi"),
 		PhasesJSON:          getenv("PHASES_JSON", `[{"name":"steady","duration_seconds":20,"active_bots":100,"rps":500}]`),
-		RedpandaBrokers:     getenv("REDPANDA_BROKERS", ""),
-		RedpandaUsername:    getenv("REDPANDA_USERNAME", ""),
-		RedpandaPassword:    getenv("REDPANDA_PASSWORD", ""),
+		RedpandaBrokers:     getenv("REDPANDA_BOOTSTRAP_SERVERS", ""),
+		RedpandaUsername:    getenv("REDPANDA_SASL_USERNAME", ""),
+		RedpandaPassword:    getenv("REDPANDA_SASL_PASSWORD", ""),
 	}
 	if cfg.RedpandaBrokers == "" {
-		return cfg, errors.New("REDPANDA_BROKERS is required")
+		return cfg, errors.New("REDPANDA_BOOTSTRAP_SERVERS is required")
 	}
 	if cfg.RunnerPods <= 0 {
 		return cfg, errors.New("RUNNER_PODS must be greater than zero")
@@ -819,7 +819,7 @@ func loadConfig() (config, error) {
 		return cfg, errors.New("GCP_PROJECT_ID is required")
 	}
 	if cfg.PubSubSubscription == "" {
-		return cfg, errors.New("PUBSUB_SUBSCRIPTION is required")
+		return cfg, errors.New("QUEUE2_SUBSCRIPTION_NAME is required")
 	}
 
 	modes := []string{"source", "image"}

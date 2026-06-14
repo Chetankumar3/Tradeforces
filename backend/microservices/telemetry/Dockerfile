@@ -1,15 +1,38 @@
 # Run from Tradeforces/backend folder
 FROM golang:1.22-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o telemetry ./cmd/telemetry
 
+# 1. Setup environment variables
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+WORKDIR /src
+
+# 2. Copy ONLY the telemetry go.mod and go.sum first to utilize layer caching
+COPY go.mod go.sum ./
+
+# 3. Download dependencies using BuildKit's Go module cache
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
+# 4. Copy ONLY the telemetry service code (bypasses the heavy monorepo bloat)
+COPY . .
+
+# 5. Build the binary using the Go build cache. 
+# We explicitly output to /out/telemetry-bin to prevent directory naming collisions.
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -ldflags="-s -w" -o /out/telemetry-bin ./cmd/telemetry
+
+
+# Final runtime stage
 FROM alpine:3.19
 RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /app
-COPY --from=builder . /app/telemetry
+
+# 6. Pull EXACTLY the compiled binary file (no source code folders)
+COPY --from=builder /out/telemetry-bin /app/telemetry-bin
+
+# 7. Use the correct relative monorepo path for the config copy
 RUN mkdir -p /etc/telemetry
 COPY config/schema.json /etc/telemetry/schema.json
-CMD ["/app/telemetry"]
+
+# 8. Execute the distinctly named binary
+CMD ["/app/telemetry-bin"]

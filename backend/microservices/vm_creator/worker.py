@@ -189,24 +189,52 @@ spec:
         logger.info(f"[CB] submission={submission_id} | build succeeded → {image_uri}")
         return image_uri
     
+    def _build_render_context(
+        self,
+        submission_id: int,
+        user_id: int,
+        docker_image: str,
+        namespace: str,
+        pod_ip: Optional[str],
+        topic_name: str,
+    ) -> Dict[str, Any]:
+        """Build the Jinja render context used by the manifest template."""
+        return {
+            "submission_id": submission_id,
+            "user_id": user_id,
+            "docker_image": docker_image,
+            "namespace": namespace,
+            "node_name": "",
+            "contestant_ingress_addr": pod_ip or "",
+            "contestant_egress_addr": pod_ip or "",
+            "shadow_egress_addr": pod_ip or "",
+            "redpanda_orders_topic": topic_name,
+        }
+
     async def deploy_pod(
         self,
         submission_id: int,
         user_id: int,
-        docker_image: str
+        docker_image: str,
+        topic_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Deploy the microVM pod and the telemetry/shadow deployments on the same node."""
         logger.info(f"Deploying VM resources for submission {submission_id}")
 
         import yaml
 
+        topic_name = topic_name or str(submission_id)
+
         template = Template(self.pod_template)
         rendered_manifest = template.render(
-            submission_id=submission_id,
-            user_id=user_id,
-            docker_image=docker_image,
-            namespace=settings.k3s_namespace,
-            node_name=""
+            **self._build_render_context(
+                submission_id=submission_id,
+                user_id=user_id,
+                docker_image=docker_image,
+                namespace=settings.k3s_namespace,
+                pod_ip=None,
+                topic_name=topic_name,
+            )
         )
 
         resources = list(yaml.safe_load_all(rendered_manifest))
@@ -222,6 +250,23 @@ spec:
 
         pod_ip = await self._wait_for_pod_running(pod.metadata.name)
 
+        rendered_manifest = Template(self.pod_template).render(
+            **self._build_render_context(
+                submission_id=submission_id,
+                user_id=user_id,
+                docker_image=docker_image,
+                namespace=settings.k3s_namespace,
+                pod_ip=pod_ip,
+                topic_name=topic_name,
+            )
+        )
+
+        resources = list(yaml.safe_load_all(rendered_manifest))
+        if not resources:
+            raise ValueError("No Kubernetes resources were rendered from the template")
+
+        microvm_manifest = resources[0]
+
         pod_details = self.k8s_client.read_namespaced_pod(
             name=pod.metadata.name,
             namespace=settings.k3s_namespace
@@ -231,7 +276,8 @@ spec:
             raise RuntimeError("Unable to resolve the node name for the microVM pod")
 
         for resource in resources[1:]:
-            if resource.get("kind", "").lower() == "deployment":
+            kind = resource.get("kind", "").lower()
+            if kind == "deployment":
                 spec = resource.setdefault("spec", {})
                 template_spec = spec.setdefault("template", {}).setdefault("spec", {})
                 template_spec.setdefault("nodeSelector", {})["kubernetes.io/hostname"] = node_name
@@ -240,6 +286,14 @@ spec:
                     body=resource
                 )
                 logger.info(f"Created deployment {resource['metadata']['name']} on node {node_name}")
+            elif kind == "pod":
+                spec = resource.setdefault("spec", {})
+                spec.setdefault("nodeSelector", {})["kubernetes.io/hostname"] = node_name
+                self.k8s_client.create_namespaced_pod(
+                    namespace=settings.k3s_namespace,
+                    body=resource
+                )
+                logger.info(f"Created pod {resource['metadata']['name']} on node {node_name}")
 
         microvm_name = microvm_manifest.get("metadata", {}).get("name") or f"microvm-{submission_id}"
         telemetry_name = resources[1].get("metadata", {}).get("name") if len(resources) > 1 else f"telemetry-deployment-{submission_id}"
@@ -250,11 +304,8 @@ spec:
             "pod_ip": pod_ip,
             "node_name": node_name,
             "microvm_pod_name": pod.metadata.name,
-            "microvm_deployment_name": microvm_name,
-            "telemetry_pod_name": telemetry_name,
-            "telemetry_deployment_name": telemetry_name,
-            "shadow_pod_name": shadow_name,
-            "shadow_deployment_name": shadow_name,
+            "telemetry_pod_name": resources[1]['metadata']['name'] if len(resources) > 1 else None,
+            "shadow_pod_name": resources[2]['metadata']['name'] if len(resources) > 2 else None,
         }
     
     async def _wait_for_pod_running(self, pod_name: str) -> str:
@@ -271,13 +322,24 @@ spec:
                     namespace=settings.k3s_namespace
                 )
                 
-                if pod.status.phase == "Running":
-                    pod_ip = pod.status.pod_ip
+                phase = getattr(pod.status, "phase", None)
+                pod_ip = getattr(pod.status, "pod_ip", None)
+
+                if phase == "Running" and pod_ip:
                     logger.info(f"Pod {pod_name} is running with IP: {pod_ip}")
                     return pod_ip
-                
-                if pod.status.phase in ["Failed", "Unknown"]:
-                    raise Exception(f"Pod failed with phase: {pod.status.phase}")
+
+                if phase in ["Running", "Pending"] and not pod_ip:
+                    elapsed = asyncio.get_event_loop().time() - start_time
+                    if elapsed > max_wait:
+                        raise TimeoutError(
+                            f"Pod {pod_name} did not receive an IP address within {max_wait}s"
+                        )
+                    await asyncio.sleep(2)
+                    continue
+
+                if phase in ["Failed", "Unknown"]:
+                    raise Exception(f"Pod failed with phase: {phase}")
                 
                 elapsed = asyncio.get_event_loop().time() - start_time
                 if elapsed > max_wait:
@@ -377,18 +439,18 @@ spec:
         self,
         submission_id: int,
         user_id: int,
-        microvm_deployment_name: str,
-        telemetry_deployment_name: str,
-        shadow_deployment_name: str,
+       microvm_pod_name: str,
+        telemetry_pod_name: str,
+        shadow_pod_name: str,
         topic_name: str,
     ) -> None:
         """Publish the updated Queue 2 payload for the submission."""
         message_data = {
             "submission_id": submission_id,
             "user_id": user_id,
-            "microvm_deployment_name": microvm_deployment_name,
-            "telemetry_deployment_name": telemetry_deployment_name,
-            "shadow_deployment_name": shadow_deployment_name,
+            "microvm_pod-name": microvm_pod_name,
+            "telemetry_pod-name": telemetry_pod_name,
+            "shadow_pod-name": shadow_pod_name,
             "topic_name": topic_name,
         }
 
@@ -429,20 +491,27 @@ spec:
             # Trigger Cloud Build
             docker_image = await self.trigger_cloud_build(gcs_url, submission_id, user_id)
 
-            # Deploy the VM, telemetry, and shadow resources
-            deployment_info = await self.deploy_pod(submission_id, user_id, docker_image)
             topic_name = str(submission_id)
 
-            # Create the Redpanda topic synchronously after VM creation succeeds
+            # Create the Redpanda topic before the telemetry/shadow manifest is rendered.
             await self.create_redpanda_topic(topic_name)
+
+            # Deploy the VM, telemetry, and shadow resources using the topic name in the env vars.
+            deployment_info = await self.deploy_pod(
+                submission_id,
+                user_id,
+                docker_image,
+                topic_name=topic_name,
+            )
+            logger.info(f"Deployment info for submission {submission_id}: {deployment_info}")
 
             # Publish the updated Queue 2 payload
             await self.publish_to_queue2(
                 submission_id,
                 user_id,
-                deployment_info.get("microvm_deployment_name") or deployment_info.get("pod_name") or "",
-                deployment_info.get("telemetry_deployment_name") or deployment_info.get("telemetry_pod_name") or "",
-                deployment_info.get("shadow_deployment_name") or deployment_info.get("shadow_pod_name") or "",
+                deployment_info.get("microvm_pod_name") or "",
+                deployment_info.get("telemetry_pod_name") or "",
+                deployment_info.get("shadow_pod_name") or "",
                 topic_name,
             )
             

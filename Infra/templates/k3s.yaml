@@ -217,14 +217,11 @@ spec:
               value: "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-bot-runner:1.1"
             - name: PHASES_JSON
               value: '[{"name":"steady","duration_seconds":20,"active_bots":100,"rps":500}]'
-            - name: REDPANDA_BROKERS
-              value: "broker1:9092"
-            - name: REDPANDA_USERNAME
-              value: "rp_user"
-            - name: REDPANDA_PASSWORD
-              value: "rp_123"
           ports:
             - containerPort: 8080
+          envFrom:
+        - configMapRef:
+            name: app-env
           resources:
             requests:
               cpu: "250m"

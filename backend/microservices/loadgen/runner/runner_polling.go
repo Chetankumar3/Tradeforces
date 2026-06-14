@@ -973,9 +973,9 @@ func loadConfig() (config, error) {
 		// NEW
 		SubmissionID:     getenv("SUBMISSION_ID", "local-submission"),
 		TopicName:        getenv("TOPIC_NAME", "orders-local"),
-		RedpandaBrokers:  splitCSV(getenv("REDPANDA_BROKERS", "")),
-		RedpandaUsername: getenv("REDPANDA_USERNAME", ""),
-		RedpandaPassword: getenv("REDPANDA_PASSWORD", ""),
+		RedpandaBrokers:  splitCSV(getenv("REDPANDA_BOOTSTRAP_SERVERS", "")),
+		RedpandaUsername: getenv("REDPANDA_SASL_USERNAME", ""),
+		RedpandaPassword: getenv("REDPANDA_SASL_PASSWORD", ""),
 
 		BotsPerPod:        getenvInt("BOTS_PER_POD", 100),
 		RequestTimeout:    time.Duration(getenvInt("REQUEST_TIMEOUT_SECONDS", 20)) * time.Second,

@@ -59,17 +59,17 @@ type queueJob struct {
 	TeamID       string
 	TopicName    string
 	MicroVMPod   string
-	TelemetryPod    string
+	TelemetryPod string
 	ShadowPod    string
 }
 
 type pubSubJobMessage struct {
-	SubmissionID string `json:"submission_id"`
-	TeamID       string `json:"team_id"`
-	TopicName    string `json:"topic_name"`
-	MicroVMPod   string `json:"microvm_pod_name"`
-	TelemetryPod    string `json:"telemetry_pod_name"`
-	ShadowPod    string `json:"shadow_pod_name"`
+	SubmissionID any `json:"submission_id"`
+	TeamID       any `json:"team_id"`
+	TopicName    any `json:"topic_name"`
+	MicroVMPod   any `json:"microvm_pod_name"`
+	TelemetryPod any `json:"telemetry_pod_name"`
+	ShadowPod    any `json:"shadow_pod_name"`
 }
 
 type readyRequest struct {
@@ -308,6 +308,7 @@ func runQueueLoop(ctx context.Context, cfg config, client kubernetes.Interface, 
 	log.Printf("listening for benchmark jobs project=%s subscription=%s", cfg.GCPProjectID, cfg.PubSubSubscription)
 	return sub.Receive(ctx, func(msgCtx context.Context, msg *pubsub.Message) {
 		job, err := parseQueueMessage(cfg, msg)
+		log.Printf("received pubsub message id=%s data=%s", msg.ID, string(msg.Data))
 		if err != nil {
 			// Invalid payloads will never become valid by retrying, so ack them
 			// after logging instead of creating an infinite redelivery loop.
@@ -334,24 +335,25 @@ func parseQueueMessage(cfg config, msg *pubsub.Message) (queueJob, error) {
 		return queueJob{}, fmt.Errorf("decode pubsub data: %w", err)
 	}
 
-	payload.SubmissionID = strings.TrimSpace(payload.SubmissionID)
-	payload.TeamID = strings.TrimSpace(payload.TeamID)
-	payload.TopicName = strings.TrimSpace(payload.TopicName)
-	payload.MicroVMPod = strings.TrimSpace(payload.MicroVMPod)
-	payload.TelemetryPod = strings.TrimSpace(payload.TelemetryPod)
-	payload.ShadowPod = strings.TrimSpace(payload.ShadowPod)
-	if payload.SubmissionID == "" || payload.TeamID == "" || payload.TopicName == "" || payload.MicroVMPod == "" || payload.TelemetryPod == "" || payload.ShadowPod == "" {
+	submissionID := strings.TrimSpace(fmt.Sprint(payload.SubmissionID))
+	teamID := strings.TrimSpace(fmt.Sprint(payload.TeamID))
+	topicName := strings.TrimSpace(fmt.Sprint(payload.TopicName))
+	microVMPod := strings.TrimSpace(fmt.Sprint(payload.MicroVMPod))
+	telemetryPod := strings.TrimSpace(fmt.Sprint(payload.TelemetryPod))
+	shadowPod := strings.TrimSpace(fmt.Sprint(payload.ShadowPod))
+
+	if submissionID == "" || teamID == "" || topicName == "" || microVMPod == "" || telemetryPod == "" || shadowPod == "" {
 		return queueJob{}, errors.New("submission_id, team_id, topic_name, microvm_pod_name, shadow_pod_name, and telemetry_pod_name are required")
 	}
 
 	return queueJob{
-		RunID:        "run-" + payload.SubmissionID,
-		SubmissionID: payload.SubmissionID,
-		TeamID:       payload.TeamID,
-		TopicName:    payload.TopicName,
-		MicroVMPod:   payload.MicroVMPod,
-		TelemetryPod: payload.TelemetryPod,
-		ShadowPod:    payload.ShadowPod,
+		RunID:        "run-" + submissionID,
+		SubmissionID: submissionID,
+		TeamID:       teamID,
+		TopicName:    topicName,
+		MicroVMPod:   microVMPod,
+		TelemetryPod: telemetryPod,
+		ShadowPod:    shadowPod,
 	}, nil
 }
 
@@ -452,7 +454,11 @@ func waitForAllRunnersReady(ctx context.Context, cfg config, client kubernetes.I
 		if state.readyCount() == cfg.RunnerPods {
 			return nil
 		}
-		if failed, err := jobFailed(ctx, cfg, client, jobName); err != nil {
+		failed, err := jobFailed(ctx, cfg, client, jobName);
+		log.Printf("job failed? boolean: %t", failed)
+		log.Printf("job error: %v", err)
+		
+		if err != nil {
 			return err
 		} else if failed {
 			return errors.New("runner job failed before all pods became ready")
@@ -523,6 +529,9 @@ func buildRunnerJob(cfg config, queued queueJob, topicName string) *batchv1.Job 
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: labels},
 				Spec: corev1.PodSpec{
+					ImagePullSecrets: []corev1.LocalObjectReference{
+						{Name: "gar-secret"},
+					},
 					RestartPolicy: corev1.RestartPolicyNever,
 					Containers: []corev1.Container{
 						buildRunnerContainer(cfg, queued, topicName),
@@ -793,7 +802,6 @@ func loadConfig() (config, error) {
 		GCPProjectID:        strings.TrimSpace(os.Getenv("GCP_PROJECT_ID")),
 		PubSubSubscription:  getenv("QUEUE2_SUBSCRIPTION_NAME", "queue2-sub"),
 		RunnerMode:          getenv("RUNNER_MODE", "source"),
-		RunnerImage:         getenv("RUNNER_IMAGE", "bot-runner:latest"),
 		RunnerCPURequest:    getenv("RUNNER_CPU_REQUEST", "500m"),
 		RunnerMemoryRequest: getenv("RUNNER_MEMORY_REQUEST", "256Mi"),
 		RunnerCPULimit:      getenv("RUNNER_CPU_LIMIT", "1"),

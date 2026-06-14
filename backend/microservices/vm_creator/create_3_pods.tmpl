@@ -90,7 +90,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: telemetry-deployment-{{ submission_id }}
+  name: telemetry-{{ submission_id }}
   labels:
     submission-id: "{{ submission_id }}"
     user-id: "{{ user_id }}"
@@ -145,7 +145,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: shadow-deployment-{{ submission_id }}
+  name: shadow-{{ submission_id }}
   labels:
     submission-id: "{{ submission_id }}"
     user-id: "{{ user_id }}"

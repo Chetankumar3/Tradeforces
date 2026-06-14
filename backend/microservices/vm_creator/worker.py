@@ -407,8 +407,6 @@ spec:
         except Exception as exc:
             logger.error(f"[RP] Failed to create topic '{topic_name}': {exc}")
             raise
-        finally:
-            admin.close()
 
     def _queue2_backlog(self) -> int:
        """Return the current Queue 2 undelivered message count via Cloud Monitoring."""

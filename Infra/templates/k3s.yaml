@@ -273,7 +273,21 @@ spec:
             - name: RUNNER_IMAGE
               value: "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-bot-runner:1.1"
             - name: PHASES_JSON
-              value: '[{"name":"steady","duration_seconds":20,"active_bots":100,"rps":500}]'
+              value: '[{"name":"steady","duration_seconds":10,"active_bots":100,"rps":500}
+                       {"name":"steady","duration_seconds":10,"active_bots":100,"rps":1200}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":3500}
+                       {"name":"steady","duration_seconds":10,"active_bots":100,"rps":7000}
+                       {"name":"steady","duration_seconds":10,"active_bots":100,"rps":10000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":14000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":20000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":30000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":36000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":45000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":60000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":65000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":40000}
+                       {"name":"steady","duration_seconds":20,"active_bots":100,"rps":20000}
+                       {"name":"steady","duration_seconds":5,"active_bots":100,"rps":0}]' 
             - name: RUNNER_CPU_REQUEST
               value: "500m"
             - name: RUNNER_MEMORY_REQUEST

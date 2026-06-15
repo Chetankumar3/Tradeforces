@@ -171,7 +171,6 @@ func loadConfig() *types.Config {
 		RPUser:           mustStr("REDPANDA_SASL_USERNAME"),
 		RPPass:           mustStr("REDPANDA_SASL_PASSWORD"),
 		OrdersTopic:      mustStr("REDPANDA_ORDERS_TOPIC"),
-		ResultsTopic:     mustStr("REDPANDA_RESULTS_TOPIC"),
 		IngressAddr:      mustStr("CONTESTANT_INGRESS_ADDR"),
 		EgressAddr:       mustStr("CONTESTANT_EGRESS_ADDR"),
 		ShadowEgressAddr: mustStr("SHADOW_EGRESS_ADDR"),

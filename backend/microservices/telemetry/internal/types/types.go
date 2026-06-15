@@ -50,7 +50,6 @@ type Config struct {
 	RPUser           string
 	RPPass           string
 	OrdersTopic      string
-	ResultsTopic     string
 	IngressAddr      string
 	EgressAddr       string
 	ShadowEgressAddr string

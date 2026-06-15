@@ -14,7 +14,7 @@ import (
 // preceded by SOH since they appear after earlier fields.
 var (
 	PfxClOrdID   = []byte("\x0111=")
-	PfxExecID    = []byte("\x0117=")
+	PfxExecID    = []byte("\x01880=")
 	PfxAggressor = []byte("\x011057=")
 )
 

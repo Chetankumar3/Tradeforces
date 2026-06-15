@@ -66,8 +66,9 @@ func drainToChannel(fetches kgo.Fetches, memoryCh chan<- types.OrderMessage,
 	for !iter.Done() {
 		record := iter.Next()
 
-		// Parse OrdID from Tag 11 in the raw FIX bytes.
-		ordID := fix.Atoi(fix.ParseTag(record.Value, fix.PfxClOrdID))
+		// Parse OrdID from Tag 11 in the raw FIX bytes as a string to preserve
+		// loadgen-generated ClOrdID values such as run-18-bot-95-... .
+		ordID := string(fix.ParseTag(record.Value, fix.PfxClOrdID))
 
 		// Copy raw bytes; franz-go may reuse the underlying buffer on next poll.
 		raw := make([]byte, len(record.Value))
@@ -79,7 +80,7 @@ func drainToChannel(fetches kgo.Fetches, memoryCh chan<- types.OrderMessage,
 			return
 		}
 		if debugEnabled {
-			logger.Printf("Go1A: queued ord_id=%d bytes=%d", ordID, len(raw))
+			logger.Printf("Go1A: queued ord_id=%s bytes=%d", ordID, len(raw))
 		}
 	}
 }

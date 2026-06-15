@@ -52,6 +52,8 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         
+        mainLogger->info("FIX session startup remains disabled; keeping the telemetry TCP listeners active.");
+
         auto& sessionManager = fix_engine::FIXSessionManager::getInstance();
         sessionManager.initialize(sessions);
 
@@ -84,20 +86,16 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        sessionManager.start();
+        sessionManager.startExecutionOnly();
+
+        mainLogger->info("Contestant TCP listeners are active and the execution pipeline is running; FIX session processing stays disabled.");
         
-        mainLogger->info("FIX Trading Gateway running. Press Ctrl+C to stop.");
-        
-        while (g_running && sessionManager.isRunning()) {
+        while (g_running) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
         
         mainLogger->info("Shutdown signal received");
-        tcpIngress.stop();
-        telemetryBridge.stop();
-        sessionManager.stop();
-        
-        mainLogger->info("FIX Trading Gateway stopped");
+        mainLogger->info("Contestant service stopped");
         
     } catch (const std::exception& e) {
         std::cerr << "Fatal error: " << e.what() << std::endl;

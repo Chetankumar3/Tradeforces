@@ -52,7 +52,7 @@ func RunGo1B(fd uintptr, ingressConn net.Conn,
 		}
 
 		if debugEnabled {
-			logger.Printf("Go1B: sent ord_id=%d t=%d", msg.OrdID, tIngress)
+			logger.Printf("Go1B: sent ord_id=%s t=%d", msg.OrdID, tIngress)
 		}
 	}
 }
@@ -70,7 +70,7 @@ func writeAll(fd uintptr, buf []byte,
 	wasBlocked := false
 
 	for written < len(buf) {
-		n, err := syscall.Write(int(fd), buf[written:])
+		n, err := writeRaw(fd, buf[written:])
 		if n > 0 {
 			written += n
 		}

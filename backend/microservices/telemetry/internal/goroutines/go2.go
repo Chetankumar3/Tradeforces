@@ -35,7 +35,7 @@ func RunGo2(conn net.Conn, egressCh chan<- types.EgressEvent,
 		msg := scratch[:n] // slice into stack buffer; valid until next ReadFIXMessage call
 
 		// Parse key fields - all zero-alloc slices into msg.
-		ordID := fix.Atoi(fix.ParseTag(msg, fix.PfxClOrdID))
+		ordID := string(fix.ParseTag(msg, fix.PfxClOrdID))
 		execID := fix.Atoi(fix.ParseTag(msg, fix.PfxExecID))
 		aggrVal := fix.ParseTag(msg, fix.PfxAggressor)
 		aggressor := len(aggrVal) > 0 && aggrVal[0] == 'Y'
@@ -57,12 +57,12 @@ func RunGo2(conn net.Conn, egressCh chan<- types.EgressEvent,
 		case go3Ch <- copyBuf:
 		default:
 			if debugEnabled {
-				logger.Printf("Go2: go3 channel full, dropping ord_id=%d", ordID)
+				logger.Printf("Go2: go3 channel full, dropping ord_id=%s", ordID)
 			}
 		}
 
 		if debugEnabled {
-			logger.Printf("Go2: exec report ord_id=%d exec_id=%d aggressor=%v t=%d",
+			logger.Printf("Go2: exec report ord_id=%s exec_id=%d aggressor=%v t=%d",
 				ordID, execID, aggressor, arrTime)
 		}
 	}

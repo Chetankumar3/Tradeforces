@@ -32,18 +32,24 @@ docker push "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforc
   echo "Bot Runner service pushed successfully"
 
 DOCKER_BUILDKIT=1 docker build --progress=auto \
+  -t "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1" \
+  -f microservices/telemetry/Dockerfile microservices/telemetry && \
+docker push "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1" && \
+  echo "Telemetry service pushed successfully"
+
+DOCKER_BUILDKIT=1 docker build --progress=auto \
+  -t "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-dashpusher:1.1" \
+  -f microservices/extra_services/Dockerfile microservices/extra_services && \
+docker push "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-dashpusher:1.1" && \
+  echo "Dashpusher service pushed successfully"
+
+DOCKER_BUILDKIT=1 docker build --progress=auto \
   --build-arg BASE_IMAGE=ubuntu:24.04 \
   -t "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1" \
   -f microservices/shadow_engine/Dockerfile \
   microservices/shadow_engine && \
 docker push "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1" && \
   echo "Shadow Engine service pushed successfully"
-
-DOCKER_BUILDKIT=1 docker build --progress=auto \
-  -t "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1" \
-  -f microservices/telemetry/Dockerfile microservices/telemetry && \
-docker push "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1" && \
-  echo "Telemetry service pushed successfully"
 
 DOCKER_BUILDKIT=1 docker build --progress=auto \
   -t "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-contestant:1.1" \

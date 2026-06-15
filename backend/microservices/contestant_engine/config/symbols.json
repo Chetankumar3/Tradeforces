@@ -13,6 +13,18 @@
       "volatility": 0.015
     },
     {
+      "symbol": "GOOG",
+      "type": "STOCK",
+      "tickSize": 0.01,
+      "lotSize": 1,
+      "minPrice": 1.0,
+      "maxPrice": 10000.0,
+      "tradingHours": "09:30-16:00",
+      "isActive": true,
+      "basePrice": 140.25,
+      "volatility": 0.018
+    },
+    {
       "symbol": "GOOGL",
       "type": "STOCK",
       "tickSize": 0.01,

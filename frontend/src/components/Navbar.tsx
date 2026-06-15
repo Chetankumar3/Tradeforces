@@ -1,6 +1,7 @@
 import { LogOut, BarChart2 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { colors } from '../theme/colors'
+import { Link } from 'react-router-dom'
 
 interface NavbarProps {
   username?: string | null
@@ -39,6 +40,13 @@ export default function Navbar({ username }: NavbarProps) {
           <LogOut size={18} />
           Logout
         </button>
+        <Link
+          to="/leaderboard"
+          className="text-sm font-medium hover:underline"
+          style={{ color: colors.text.accent }}
+        >
+          Leaderboard
+        </Link>
       </div>
     </nav>
   )

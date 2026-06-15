@@ -12,8 +12,8 @@ import (
 // can reach these fields, so no locks are ever required.
 type go4State struct {
 	// DS1: OrdID -> t_ingress, with FIFO ring-buffer eviction at 1,000,000 entries.
-	DS1Recorder      map[int]int64
-	DS1Ring          [1_000_000]int
+	DS1Recorder      map[string]int64
+	DS1Ring          [1_000_000]string
 	ds1Head, ds1Tail int
 
 	// DS2: ExecID -> []int64.
@@ -34,7 +34,7 @@ type go4State struct {
 
 func newGo4State() *go4State {
 	return &go4State{
-		DS1Recorder:    make(map[int]int64, 1_000_000),
+		DS1Recorder:    make(map[string]int64, 1_000_000),
 		DS2ExecTracker: make(map[int][]int64, 100_000),
 		DS15Throughput: make(map[int64]int),
 		ds15SecDeque:   make([]int64, 0, 120),
@@ -81,7 +81,7 @@ func RunGo4(ingressCh <-chan types.IngressEvent, egressCh <-chan types.EgressEve
 
 // handleIngress records an order's send time, updates the per-second throughput
 // counters, and inserts into DS1 with FIFO ring-buffer eviction.
-func (s *go4State) handleIngress(ordID int, tIngress int64, logger *log.Logger) {
+func (s *go4State) handleIngress(ordID string, tIngress int64, logger *log.Logger) {
 	sec := tIngress / 1_000_000_000
 
 	// Update the throughput counter for this second.
@@ -110,7 +110,7 @@ func (s *go4State) handleIngress(ordID int, tIngress int64, logger *log.Logger) 
 	s.ds1Tail = (s.ds1Tail + 1) % 1_000_000
 
 	if debugEnabled {
-		logger.Printf("Go4: ingress ord_id=%d sec=%d rps=%d",
+		logger.Printf("Go4: ingress ord_id=%s sec=%d rps=%d",
 			ordID, sec, s.DS15Throughput[sec])
 	}
 }
@@ -119,7 +119,7 @@ func (s *go4State) handleIngress(ordID int, tIngress int64, logger *log.Logger) 
 // appropriate latency. Aggressor reports yield ACK latency (arr - t_ingress);
 // resting reports yield EXEC latency once the aggressor's t_ingress is known.
 // All reports of one trade share an ExecID, which links them inside DS2.
-func (s *go4State) handleEgress(ordID int, execID int, aggressor bool, arrTime int64, logger *log.Logger) {
+func (s *go4State) handleEgress(ordID string, execID int, aggressor bool, arrTime int64, logger *log.Logger) {
 	tracker := s.DS2ExecTracker[execID] // nil if first time seeing this exec_id
 
 	if len(tracker) == 0 {
@@ -129,7 +129,7 @@ func (s *go4State) handleEgress(ordID int, execID int, aggressor bool, arrTime i
 				s.DS2ExecTracker[execID] = append(make([]int64, 0, 2), tIn)
 				delete(s.DS1Recorder, ordID)
 				if debugEnabled {
-					logger.Printf("Go4: ACK lat=%dns ord_id=%d exec_id=%d",
+					logger.Printf("Go4: ACK lat=%dns ord_id=%s exec_id=%d",
 						arrTime-tIn, ordID, execID)
 				}
 			}
@@ -163,7 +163,7 @@ func (s *go4State) handleEgress(ordID int, execID int, aggressor bool, arrTime i
 			s.EXECHistogram.RecordValue(latency)
 			s.DS2ExecTracker[execID] = s.DS2ExecTracker[execID][:last] // pop back
 			if debugEnabled {
-				logger.Printf("Go4: EXEC lat=%dns exec_id=%d", latency, execID)
+				logger.Printf("Go4: EXEC lat=%dns ord_id=%s exec_id=%d", latency, ordID, execID)
 			}
 		}
 		// DS2ExecTracker[execID] now holds [t_ingress] only; kept for future resting reports.

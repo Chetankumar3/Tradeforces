@@ -45,16 +45,16 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 	correctnessReqCh <-chan types.CorrectnessRequest,
 	logger *log.Logger) {
 
-	shadowPending := make(map[int]map[string]struct{})     // ClOrdID -> set of normalized shadow reports
-	contestantPending := make(map[int]map[string]struct{}) // ClOrdID -> set of normalized contestant reports
-	totalShadowReports := 0                                // denominator: total exec reports from shadow
-	matchedReports := 0                                    // numerator: reports that matched
+	shadowPending := make(map[string]map[string]struct{})     // ClOrdID -> set of normalized shadow reports
+	contestantPending := make(map[string]map[string]struct{}) // ClOrdID -> set of normalized contestant reports
+	totalShadowReports := 0                                   // denominator: total exec reports from shadow
+	matchedReports := 0                                       // numerator: reports that matched
 
 	for {
 		select {
 
 		case msg := <-shadowCh:
-			clOrdID := fix.Atoi(fix.ParseTag(msg, fix.PfxClOrdID))
+			clOrdID := string(fix.ParseTag(msg, fix.PfxClOrdID))
 			norm := normalize(msg)
 			totalShadowReports++
 			// Did the contestant already send a matching report?
@@ -66,7 +66,7 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 					}
 					matchedReports++
 					if debugEnabled {
-						logger.Printf("Go3: MATCH (shadow late) ord_id=%d score=%d/%d",
+						logger.Printf("Go3: MATCH (shadow late) ord_id=%s score=%d/%d",
 							clOrdID, matchedReports, totalShadowReports)
 					}
 					continue
@@ -78,12 +78,12 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 			}
 			shadowPending[clOrdID][norm] = struct{}{}
 			if debugEnabled {
-				logger.Printf("Go3: shadow stored ord_id=%d total_shadow=%d",
+				logger.Printf("Go3: shadow stored ord_id=%s total_shadow=%d",
 					clOrdID, totalShadowReports)
 			}
 
 		case msg := <-go3Ch:
-			clOrdID := fix.Atoi(fix.ParseTag(msg, fix.PfxClOrdID))
+			clOrdID := string(fix.ParseTag(msg, fix.PfxClOrdID))
 			norm := normalize(msg)
 			// Did the shadow already send a matching report?
 			if set, ok := shadowPending[clOrdID]; ok {
@@ -94,7 +94,7 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 					}
 					matchedReports++
 					if debugEnabled {
-						logger.Printf("Go3: MATCH (contestant late) ord_id=%d score=%d/%d",
+						logger.Printf("Go3: MATCH (contestant late) ord_id=%s score=%d/%d",
 							clOrdID, matchedReports, totalShadowReports)
 					}
 					continue
@@ -106,7 +106,7 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 			}
 			contestantPending[clOrdID][norm] = struct{}{}
 			if debugEnabled {
-				logger.Printf("Go3: contestant stored, no shadow yet ord_id=%d", clOrdID)
+				logger.Printf("Go3: contestant stored, no shadow yet ord_id=%s", clOrdID)
 			}
 
 		case req := <-correctnessReqCh:

@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import UploadPage from './pages/UploadPage'
+import LeaderboardPage from './pages/LeaderboardPage'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

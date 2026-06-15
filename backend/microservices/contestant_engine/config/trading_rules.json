@@ -5,6 +5,7 @@
   "maxOrdersPerSecond": 100,
   "tradableSymbols": [
     "AAPL",
+    "GOOG",
     "GOOGL",
     "MSFT",
     "AMZN",

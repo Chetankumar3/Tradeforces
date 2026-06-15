@@ -203,8 +203,12 @@ void TcpIngress::readLoop(boost::asio::ip::tcp::socket& socket) {
 
 void TcpIngress::routeMessage(const std::string& rawMessage) {
     auto logger = utils::Logger::getInstance().getLogger("main");
+
+    logger->info("[contestant ingress] parse[0] rawLen=" + std::to_string(rawMessage.size()) +
+                 ", start=" + std::string(rawMessage.rfind("8=FIX.4.2") != std::string::npos ? "ok" : "missing"));
+
     if (!validateIngressMessage(rawMessage)) {
-        logger->warn("Skipping invalid contestant ingress FIX message");
+        logger->warn("Skipping invalid contestant ingress FIX message (custom parser rejected the framing)");
         return;
     }
 
@@ -220,6 +224,12 @@ void TcpIngress::routeMessage(const std::string& rawMessage) {
     }
 
     normalizeIngressMessage(message);
+
+    const auto clOrdId = message.getField(11).value_or("<missing>");
+    const auto symbol = message.getField(55).value_or("<missing>");
+    const auto msgType = message.getMsgType();
+    logger->info("[contestant ingress] parse[1] msgType=" + std::to_string(static_cast<int>(msgType)) +
+                 ", ClOrdID=" + clOrdId + ", Symbol=" + symbol);
 
     const std::string sessionId =
         getenvOr("CONTESTANT_ENGINE_SESSION_ID", "CLIENT_SESSION_1");
@@ -237,11 +247,16 @@ void TcpIngress::routeMessage(const std::string& rawMessage) {
         return;
     }
 
+    logger->info("[contestant ingress] parse[2] session=" + sessionId +
+                 ", orderManager=ok, msgType=" + std::to_string(static_cast<int>(message.getMsgType())));
+
     switch (message.getMsgType()) {
         case fix_engine::MsgType::NEW_ORDER_SINGLE:
+            logger->info("[contestant ingress] parse[3] dispatch=NEW_ORDER_SINGLE");
             orderManager->handleNewOrderSingle(message);
             break;
         case fix_engine::MsgType::ORDER_CANCEL_REQUEST:
+            logger->info("[contestant ingress] parse[3] dispatch=ORDER_CANCEL_REQUEST");
             orderManager->handleOrderCancelRequest(message);
             break;
         default:
@@ -288,12 +303,14 @@ bool TcpIngress::validateIngressMessage(const std::string& rawMessage) const {
     if (!parseUnsigned(bodyLengthText, bodyLength)) {
         return false;
     }
-    if (bodyLength != rawMessage.size() - secondSoh - 1) {
-        return false;
-    }
 
     const size_t checksumPos = rawMessage.rfind(std::string(1, kSoh) + "10=");
     if (checksumPos == std::string::npos || checksumPos + 8 != rawMessage.size()) {
+        return false;
+    }
+
+    const size_t bodyLengthFromFrame = checksumPos - secondSoh;
+    if (bodyLength != bodyLengthFromFrame) {
         return false;
     }
 

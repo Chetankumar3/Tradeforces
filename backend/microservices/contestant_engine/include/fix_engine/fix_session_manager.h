@@ -26,6 +26,7 @@ public:
     void initialize(const std::vector<utils::SessionConfig>& configs);
     void setExecutionReportSink(ExecutionReportSink callback);
     void start();
+    void startExecutionOnly();
     void stop();
     std::shared_ptr<FIXSession> getSession(const std::string& sessionId);
     std::shared_ptr<order_manager::OrderManager> getOrderManager(const std::string& sessionId);

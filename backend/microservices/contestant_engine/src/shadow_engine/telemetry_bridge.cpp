@@ -182,6 +182,7 @@ std::string TelemetryBridge::filterExecutionReport(const fix_engine::FIXMessage&
     push(55);
     push(150);
     push(151);
+    push(880);
     push(1057);
 
     std::ostringstream oss;

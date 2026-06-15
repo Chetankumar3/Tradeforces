@@ -220,9 +220,10 @@ spec:
         shadow_pod_ip: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Build the Jinja render context used by the manifest template."""
-        contestant_host = f"microvm-{submission_id}.{namespace}" if namespace else f"microvm-{submission_id}"
-        shadow_host = f"shadow-{submission_id}.{namespace}" if namespace else f"shadow-{submission_id}"
-
+        submission_domain = f"submission-{submission_id}.{namespace}" if namespace else f"submission-{submission_id}"
+        contestant_host = f"microvm-{submission_id}.{submission_domain}.svc.cluster.local"
+        shadow_host = f"shadow-{submission_id}.{submission_domain}.svc.cluster.local"
+        
         # Use the actual microVM Pod IP for telemetry dial targets once the Pod is running.
         # The template still appends the fixed TCP ports (9100/9101), so only the IP portion
         # changes at runtime.

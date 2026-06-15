@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "microvm-{{ submission_id }}"
-  namespace: "{{ namespace }}"
+  name: "microvm-18"
+  namespace: "default"
   labels:
-    submission-id: "{{ submission_id }}"
-    user-id: "{{ user_id }}"
+    submission-id: "18"
+    user-id: "user-18"
     app: tradeforces-submission
 spec:
-  hostname: microvm-{{ submission_id }}
-  subdomain: submission-{{ submission_id }}
+  hostname: microvm-18
+  subdomain: submission-18
   imagePullSecrets:
   - name: gar-secret
   runtimeClassName: kata-qemu
@@ -26,7 +26,7 @@ spec:
             - key: submission-id
               operator: In
               values:
-              - "{{ submission_id }}"
+              - "18"
             - key: app
               operator: In
               values:
@@ -46,8 +46,8 @@ spec:
 
   containers:
   - name: trader
-    image: "{{ docker_image }}"
-    imagePullPolicy: IfNotPresent
+    image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-contestant:1.1
+    imagePullPolicy: Always
     
     ports:
     - name: http
@@ -73,9 +73,9 @@ spec:
             
     env:
     - name: SUBMISSION_ID
-      value: "{{ submission_id }}"
+      value: "18"
     - name: USER_ID
-      value: "{{ user_id }}"
+      value: "user-18"
     - name: POD_NAMESPACE
       valueFrom:
         fieldRef:
@@ -95,14 +95,14 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: telemetry-{{ submission_id }}
+  name: telemetry-18
   labels:
-    submission-id: "{{ submission_id }}"
-    user-id: "{{ user_id }}"
+    submission-id: "18"
+    user-id: "user-18"
     app: telemetry
 spec:
-  hostname: telemetry-{{ submission_id }}
-  subdomain: submission-{{ submission_id }}
+  hostname: telemetry-18
+  subdomain: submission-18
   imagePullSecrets:
   - name: gar-secret
   restartPolicy: Never
@@ -116,7 +116,7 @@ spec:
           - key: submission-id
             operator: In
             values:
-            - "{{ submission_id }}"
+            - "18"
           - key: app
             operator: In
             values:
@@ -138,17 +138,17 @@ spec:
         protocol: TCP
     env:
     - name: SUBMISSION_ID
-      value: "{{ submission_id }}"
+      value: "18"
     - name: USER_ID
-      value: "{{ user_id }}"
+      value: "user-18"
     - name: REDPANDA_ORDERS_TOPIC
-      value: "{{ redpanda_orders_topic }}"
+      value: "18"
     - name: CONTESTANT_INGRESS_ADDR
-      value: "{{ contestant_ingress_addr }}:9100"
+      value: "microvm-18.submission-18.default.svc.cluster.local:9100"
     - name: CONTESTANT_EGRESS_ADDR
-      value: "{{ contestant_egress_addr }}:9101"
+      value: "microvm-18.submission-18.default.svc.cluster.local:9101"
     - name: SHADOW_EGRESS_ADDR
-      value: "{{ shadow_egress_addr }}:9100"
+      value: "shadow-18.submission-18.default.svc.cluster.local:9100"
     envFrom:
     - configMapRef:
         name: app-env
@@ -157,11 +157,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: submission-{{ submission_id }}
+  name: submission-18
 spec:
   clusterIP: None
   selector:
-    submission-id: "{{ submission_id }}"
+    submission-id: "18"
   ports:
   - name: ingress
     port: 9100
@@ -170,19 +170,20 @@ spec:
     port: 9101
     targetPort: 9101
 
+
 ---
 # Template for shadow_engine pod
 apiVersion: v1
 kind: Pod
 metadata:
-  name: shadow-{{ submission_id }}
+  name: shadow-18
   labels:
-    submission-id: "{{ submission_id }}"
-    user-id: "{{ user_id }}"
+    submission-id: "18"
+    user-id: "user-18"
     app: shadow
 spec:
-  hostname: shadow-{{ submission_id }}
-  subdomain: submission-{{ submission_id }}
+  hostname: shadow-18
+  subdomain: submission-18
   imagePullSecrets:
   - name: gar-secret
   restartPolicy: Never
@@ -196,7 +197,7 @@ spec:
           - key: submission-id
             operator: In
             values:
-            - "{{ submission_id }}"
+            - "18"
           - key: app
             operator: In
             values:
@@ -217,62 +218,9 @@ spec:
       containerPort: 9100
     env:
     - name: SUBMISSION_ID
-      value: "{{ submission_id }}"
+      value: "18"
     - name: REDPANDA_ORDERS_TOPIC
-      value: "{{ redpanda_orders_topic }}"
-    envFrom:
-    - configMapRef:
-        name: app-env
-
-
----
-# Template for shadow_engine pod
-apiVersion: v1
-kind: Pod
-metadata:
-  name: shadow-{{ submission_id }}
-  labels:
-    submission-id: "{{ submission_id }}"
-    user-id: "{{ user_id }}"
-    app: shadow
-spec:
-  imagePullSecrets:
-  - name: gar-secret
-  restartPolicy: Never
-  terminationGracePeriodSeconds: 30
-  affinity:
-    podAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-      - topologyKey: kubernetes.io/hostname
-        labelSelector:
-          matchExpressions:
-          - key: submission-id
-            operator: In
-            values:
-            - "{{ submission_id }}"
-          - key: app
-            operator: In
-            values:
-            - tradeforces-submission
-  containers:
-  - name: shadow-container
-    image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-shadow:1.1
-    imagePullPolicy: Always
-    command: ["/app/fix_gateway"]
-    ports:
-    - name: admin
-      containerPort: 8080
-    - name: redpanda
-      containerPort: 9092
-    - name: fix
-      containerPort: 9876
-    - name: telemetry
-      containerPort: 9100
-    env:
-    - name: SUBMISSION_ID
-      value: "{{ submission_id }}"
-    - name: REDPANDA_ORDERS_TOPIC
-      value: "{{ redpanda_orders_topic }}"
+      value: "18"
     envFrom:
     - configMapRef:
         name: app-env

@@ -31,8 +31,8 @@ func RunGo7(conn net.Conn, shadowCh chan<- []byte, logger *log.Logger) {
 		shadowCh <- copyBuf // blocking send; shadow channel should not fill up
 
 		if debugEnabled {
-			ordID := fix.Atoi(fix.ParseTag(scratch[:n], fix.PfxClOrdID))
-			logger.Printf("Go7: shadow exec report ord_id=%d", ordID)
+			ordID := string(fix.ParseTag(scratch[:n], fix.PfxClOrdID))
+			logger.Printf("Go7: shadow exec report ord_id=%s", ordID)
 		}
 	}
 }

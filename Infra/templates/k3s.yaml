@@ -19,6 +19,19 @@ spec:
     targetPort: 8000
 
 ---
+# SERVICE FOR DASHPUSHER DEPLOYMENT
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashpusher-service
+spec:
+  selector:
+    app: dashpusher
+  ports:
+  - port: 80
+    targetPort: 8000
+
+---
 # INGRESS TO EXPOSE THE SERVICE
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -35,6 +48,13 @@ spec:
         backend:
           service:
             name: main-service
+            port:
+              number: 80
+      - path: /dashpusher
+        pathType: Prefix
+        backend:
+          service:
+            name: dashpusher-service
             port:
               number: 80
 
@@ -61,6 +81,36 @@ spec:
       containers:
       - name: main-container
         image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-main:1.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: app-env
+
+---
+# dashpusher service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashpusher-deployment
+  labels:
+    app: dashpusher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashpusher
+  template:
+    metadata:
+      labels:
+        app: dashpusher
+    spec:
+      imagePullSecrets:
+      - name: gar-secret
+      containers:
+      - name: dashpusher-container
+        image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-dashpusher:1.1
         imagePullPolicy: Always
         ports:
         - containerPort: 8000

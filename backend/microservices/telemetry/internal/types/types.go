@@ -4,19 +4,19 @@ package types
 
 // OrderMessage is parsed by Go1A from Redpanda and consumed by Go1B.
 type OrderMessage struct {
-	OrdID    int    // parsed from Tag 11 (ClOrdID)
+	OrdID    string // parsed from Tag 11 (ClOrdID)
 	RawBytes []byte // full FIX message bytes, copied from the Redpanda record
 }
 
 // IngressEvent is sent from Go1B to Go4 after writing an order to the TCP socket.
 type IngressEvent struct {
-	OrdID    int
+	OrdID    string
 	TIngress int64 // time.Now().UnixNano() captured immediately after syscall.Write
 }
 
 // EgressEvent is sent from Go2 to Go4 after reading an exec report from the contestant.
 type EgressEvent struct {
-	OrdID     int
+	OrdID     string
 	ExecID    int   // Tag 17 value
 	Aggressor bool  // true if Tag 1057 == 'Y'
 	ArrTime   int64 // time.Now().UnixNano() captured immediately after ReadFIXMessage

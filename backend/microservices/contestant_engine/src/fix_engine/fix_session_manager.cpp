@@ -80,6 +80,25 @@ void FIXSessionManager::initialize(const std::vector<utils::SessionConfig>& conf
     }
 }
 
+void FIXSessionManager::startExecutionOnly() {
+    if (running_) {
+        return;
+    }
+
+    auto& logger = utils::Logger::getInstance();
+    logger.getLogger("main")->info("Starting execution-only FIX pipeline (FIX sessions remain disabled)");
+
+    if (!adminServer_) {
+        adminServer_ = std::make_unique<admin::AdminServer>(8080);
+    }
+
+    adminServer_->start();
+    exchange_.start();
+    running_ = true;
+
+    logger.getLogger("main")->info("Execution-only pipeline started");
+}
+
 void FIXSessionManager::start() {
     if (running_) {
         return;

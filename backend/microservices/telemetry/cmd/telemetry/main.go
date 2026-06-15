@@ -8,7 +8,6 @@ package main
 import (
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -112,13 +111,12 @@ func newLogger(path string) *log.Logger {
 // the engine pods are still binding their TCP listeners.
 func dialTCP(addr string) *net.TCPConn {
 	const (
-		maxAttempts = 8
 		baseDelay   = 250 * time.Millisecond
+		maxDelay    = 4 * time.Second
 		dialTimeout = 5 * time.Second
 	)
 
-	var lastErr error
-	for attempt := 1; attempt <= maxAttempts; attempt++ {
+	for attempt := 1; ; attempt++ {
 		conn, err := net.DialTimeout("tcp", addr, dialTimeout)
 		if err == nil {
 			tcp, ok := conn.(*net.TCPConn)
@@ -129,15 +127,13 @@ func dialTCP(addr string) *net.TCPConn {
 			return tcp
 		}
 
-		lastErr = err
-		if attempt < maxAttempts {
-			delay := time.Duration(attempt) * baseDelay
-			log.Printf("dialTCP: waiting for %s (attempt %d/%d): %v; retrying in %s", addr, attempt, maxAttempts, err, delay)
-			time.Sleep(delay)
+		delay := time.Duration(attempt) * baseDelay
+		if delay > maxDelay {
+			delay = maxDelay
 		}
+		log.Printf("dialTCP: waiting for %s (attempt %d): %v; retrying in %s", addr, attempt, err, delay)
+		time.Sleep(delay)
 	}
-
-	panic(fmt.Sprintf("dialTCP: failed to connect to %s after %d attempts: %v", addr, maxAttempts, lastErr))
 }
 
 // loadSchema reads and JSON-decodes the output-field schema map.

@@ -1,24 +1,21 @@
-//go:build ignore
-
 package goroutines
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math"
 	"time"
 
 	"github.com/iicpc/telemetry/internal/types"
-	"github.com/redis/go-redis/v9"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 // RunGo6 is the Scorer. On each tick it pulls a latency/throughput snapshot from
 // Go4 and the correctness % from Go3 (both synchronous via embedded response
 // channels), computes the weighted composite score, and publishes a JSON record
 // to the Redpanda results topic keyed by SUBMISSION_ID.
-func RunGo6(rdb *redis.Client, cfg *types.Config, schemaFields map[string]string,
+func RunGo6(client *kgo.Client, cfg *types.Config, schemaFields map[string]string,
 	scoreReqCh chan<- types.ScoreRequest,
 	correctnessReqCh chan<- types.CorrectnessRequest,
 	logger *log.Logger) {
@@ -46,31 +43,14 @@ func RunGo6(rdb *redis.Client, cfg *types.Config, schemaFields map[string]string
 		// Time lapse = (publishes so far) * window size. First publish 0s, then
 		// one scorer interval per subsequent publish: 0, interval, 2*interval, ...
 		timelapse := publishCount * cfg.ScorerIntervalSec
+		payload := buildScoreJSON(snap, C, score, schemaFields, timelapse)
 
-		// Build score JSON
-		scoreData := map[string]interface{}{
-			"ack_p50_ns":         snap.ACK_P50,
-			"ack_p90_ns":         snap.ACK_P90,
-			"ack_p99_ns":         snap.ACK_P99,
-			"exec_p50_ns":        snap.EXEC_P50,
-			"exec_p90_ns":        snap.EXEC_P90,
-			"exec_p99_ns":        snap.EXEC_P99,
-			"max_throughput_rps": snap.MaxThroughput,
-			"correctness_pct":    C,
-			"combined_score":     score,
-			"time_lapse_sec":     timelapse,
-		}
-
-		jsonPayload, _ := json.Marshal(scoreData)
-
-		// Push to Redis sorted set
-		rdb.ZAdd(context.Background(), "leaderboard:composite", redis.Z{
-			Score:  score,
-			Member: cfg.SubmissionID,
-		})
-
-		// Optionally store full record
-		rdb.Set(context.Background(), fmt.Sprintf("score:%s", cfg.SubmissionID), string(jsonPayload), 0)
+		// Publish to Redpanda; SUBMISSION_ID is the partition KEY, not a payload field.
+		client.Produce(context.Background(), &kgo.Record{
+			Topic: cfg.ResultsTopic,
+			Key:   []byte(cfg.SubmissionID),
+			Value: payload,
+		}, nil) // async fire-and-forget
 
 		publishCount++
 

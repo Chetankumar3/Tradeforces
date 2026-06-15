@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/mnt/d/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/_deps/googletest-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

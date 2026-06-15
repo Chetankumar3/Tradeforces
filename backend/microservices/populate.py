@@ -5,10 +5,9 @@ from confluent_kafka import Producer
 # CONFIGURATION VARIABLES
 # ==========================================
 JSON_FILE_PATH = "messages.json"
-TOPIC_NAME     = "20"  # Assuming '20' is your topic based on your previous logs
-BROKERS        = "d8ldqou8rvp9ucmhj1tg.any.ap-south-1.mpx.prd.cloud.redpanda.com:9092" # Replace with your Redpanda broker IP(s)
+TOPIC_NAME     = "20"
+BROKERS        = "d8ldqou8rvp9ucmhj1tg.any.ap-south-1.mpx.prd.cloud.redpanda.com:9092"
 
-# If you are using SASL/SCRAM authentication (uncomment and fill these in if needed)
 USE_AUTH = True
 RP_USER  = "rp_user"
 RP_PASS  = "rp_123"
@@ -23,7 +22,7 @@ conf = {
 
 if USE_AUTH:
     conf.update({
-        'security.protocol': 'SASL_SSL', # Or SASL_PLAINTEXT depending on your setup
+        'security.protocol': 'SASL_SSL',
         'sasl.mechanisms': 'SCRAM-SHA-256',
         'sasl.username': RP_USER,
         'sasl.password': RP_PASS
@@ -31,12 +30,35 @@ if USE_AUTH:
 
 producer = Producer(conf)
 
-# Optional delivery callback to confirm successful publishing
 def delivery_report(err, msg):
     if err is not None:
         print(f"[ERROR] Message delivery failed: {err}")
     else:
         print(f"[SUCCESS] Message delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}")
+
+# ==========================================
+# FIX CHECKSUM CALCULATOR
+# ==========================================
+def recalculate_fix_checksum(payload: str) -> str:
+    """
+    Finds the '10=' tag, calculates the sum of all ASCII characters 
+    preceding it (including the SOH delimiter), and returns the updated payload.
+    """
+    checksum_marker = '\x0110='
+    idx = payload.rfind(checksum_marker)
+    
+    if idx == -1:
+        return payload
+
+    # Extract everything up to and including the SOH before '10='
+    prefix = payload[:idx + 1]
+    
+    # Sum ASCII values
+    total_sum = sum(ord(c) for c in prefix)
+    calculated_checksum = total_sum % 256
+    
+    # Return reassembled payload with 3-digit zero-padded checksum
+    return f"{prefix}10={calculated_checksum:03d}\x01"
 
 # ==========================================
 # READ JSON AND PUBLISH
@@ -48,18 +70,17 @@ def main():
             
         print(f"Loaded {len(messages)} messages from {JSON_FILE_PATH}. Starting publish...")
 
-        for idx, item in enumerate(messages[:20]):  # Limit to first 20 messages
-            # Extract the raw FIX payload
+        for idx, item in enumerate(messages[:20]):
             val_payload = item.get("value", {}).get("payload")
-            
-            # Extract the key if it exists (converting to string as Kafka expects bytes/strings)
             key_payload = str(item.get("key", {}).get("payload", ""))
 
             if not val_payload:
                 print(f"Skipping index {idx}: No value payload found.")
                 continue
 
-            # Publish to Redpanda
+            # Update the checksum in-memory
+            val_payload = recalculate_fix_checksum(val_payload)
+
             producer.produce(
                 topic=TOPIC_NAME,
                 key=key_payload.encode('utf-8') if key_payload else None,
@@ -67,10 +88,8 @@ def main():
                 callback=delivery_report
             )
 
-            # Periodically poll to handle delivery callbacks and avoid queue overflow
             producer.poll(0)
 
-        # Wait for all asynchronous messages to be delivered
         print("Flushing messages to broker...")
         producer.flush()
         print("All messages successfully published!")

@@ -16,7 +16,17 @@ import (
 // alphabetically, and joins them with SOH. Two reports are equal iff their
 // normalized strings are identical.
 func normalize(msg []byte) string {
-	excluded := map[string]bool{"8": true, "9": true, "10": true, "17": true, "37": true}
+	// Strip FIX framing plus identity fields that are not stable across
+	// contestant/shadow runs (e.g. ClOrdID / OrigClOrdID / engine-generated IDs).
+	excluded := map[string]bool{
+		"8":  true,
+		"9":  true,
+		"10": true,
+		"11": true,
+		"17": true,
+		"37": true,
+		"41": true,
+	}
 	parts := []string{}
 
 	// Scan msg, splitting on SOH, and process each "tag=value" token.
@@ -45,10 +55,10 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 	correctnessReqCh <-chan types.CorrectnessRequest,
 	logger *log.Logger) {
 
-	shadowPending := make(map[string]map[string]struct{})     // ClOrdID -> set of normalized shadow reports
-	contestantPending := make(map[string]map[string]struct{}) // ClOrdID -> set of normalized contestant reports
-	totalShadowReports := 0                                   // denominator: total exec reports from shadow
-	matchedReports := 0                                       // numerator: reports that matched
+	shadowPending := make(map[string]struct{})     // normalized shadow report fingerprints
+	contestantPending := make(map[string]struct{}) // normalized contestant report fingerprints
+	totalShadowReports := 0                        // denominator: total exec reports from shadow
+	matchedReports := 0                            // numerator: reports that matched
 
 	for {
 		select {
@@ -57,26 +67,18 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 			clOrdID := string(fix.ParseTag(msg, fix.PfxClOrdID))
 			norm := normalize(msg)
 			totalShadowReports++
-			// Did the contestant already send a matching report?
-			if set, ok := contestantPending[clOrdID]; ok {
-				if _, found := set[norm]; found {
-					delete(set, norm)
-					if len(set) == 0 {
-						delete(contestantPending, clOrdID)
-					}
-					matchedReports++
-					if debugEnabled {
-						logger.Printf("Go3: MATCH (shadow late) ord_id=%s score=%d/%d",
-							clOrdID, matchedReports, totalShadowReports)
-					}
-					continue
+			// Did the contestant already send a matching normalized report?
+			if _, found := contestantPending[norm]; found {
+				delete(contestantPending, norm)
+				matchedReports++
+				if debugEnabled {
+					logger.Printf("Go3: MATCH (shadow late) ord_id=%s score=%d/%d",
+						clOrdID, matchedReports, totalShadowReports)
 				}
+				continue
 			}
 			// Contestant has not sent this report yet; store in shadowPending.
-			if shadowPending[clOrdID] == nil {
-				shadowPending[clOrdID] = make(map[string]struct{})
-			}
-			shadowPending[clOrdID][norm] = struct{}{}
+			shadowPending[norm] = struct{}{}
 			if debugEnabled {
 				logger.Printf("Go3: shadow stored ord_id=%s total_shadow=%d",
 					clOrdID, totalShadowReports)
@@ -85,26 +87,18 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 		case msg := <-go3Ch:
 			clOrdID := string(fix.ParseTag(msg, fix.PfxClOrdID))
 			norm := normalize(msg)
-			// Did the shadow already send a matching report?
-			if set, ok := shadowPending[clOrdID]; ok {
-				if _, found := set[norm]; found {
-					delete(set, norm)
-					if len(set) == 0 {
-						delete(shadowPending, clOrdID)
-					}
-					matchedReports++
-					if debugEnabled {
-						logger.Printf("Go3: MATCH (contestant late) ord_id=%s score=%d/%d",
-							clOrdID, matchedReports, totalShadowReports)
-					}
-					continue
+			// Did the shadow already send a matching normalized report?
+			if _, found := shadowPending[norm]; found {
+				delete(shadowPending, norm)
+				matchedReports++
+				if debugEnabled {
+					logger.Printf("Go3: MATCH (contestant late) ord_id=%s score=%d/%d",
+						clOrdID, matchedReports, totalShadowReports)
 				}
+				continue
 			}
 			// Shadow has not sent this report yet; store in contestantPending.
-			if contestantPending[clOrdID] == nil {
-				contestantPending[clOrdID] = make(map[string]struct{})
-			}
-			contestantPending[clOrdID][norm] = struct{}{}
+			contestantPending[norm] = struct{}{}
 			if debugEnabled {
 				logger.Printf("Go3: contestant stored, no shadow yet ord_id=%s", clOrdID)
 			}

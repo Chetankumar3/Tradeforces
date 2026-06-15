@@ -52,11 +52,11 @@ spec:
     - name: REDPANDA_ORDERS_TOPIC
       value: "20"
     - name: CONTESTANT_INGRESS_ADDR
-      value: "172.20.0.178:9100"
+      value: "172.20.0.194:9100"
     - name: CONTESTANT_EGRESS_ADDR
-      value: "172.20.0.178:9101"
+      value: "172.20.0.194:9101"
     - name: SHADOW_EGRESS_ADDR
-      value: "172.20.0.179:9100"
+      value: "172.20.0.195:9100"
     envFrom:
     - configMapRef:
         name: app-env

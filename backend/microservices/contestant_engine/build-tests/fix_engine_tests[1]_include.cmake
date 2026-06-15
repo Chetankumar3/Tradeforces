@@ -1,0 +1,5 @@
+if(EXISTS "/mnt/d/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/fix_engine_tests[1]_tests.cmake")
+  include("/mnt/d/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/fix_engine_tests[1]_tests.cmake")
+else()
+  add_test(fix_engine_tests_NOT_BUILT fix_engine_tests_NOT_BUILT)
+endif()

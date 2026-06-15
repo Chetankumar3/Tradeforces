@@ -6,6 +6,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"log"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/iicpc/telemetry/internal/goroutines"
 	"github.com/iicpc/telemetry/internal/types"
+	"github.com/redis/go-redis/v9"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 )
@@ -49,6 +51,7 @@ func main() {
 		kgo.DialTLSConfig(new(tls.Config)),
 		kgo.SASL(scram.Auth{User: cfg.RPUser, Pass: cfg.RPPass}.AsSha256Mechanism()),
 		kgo.ConsumeTopics(cfg.OrdersTopic),
+		kgo.ConsumerGroup("contestant-engine-group"),
 		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
 	}
 	client, err := kgo.NewClient(opts...)
@@ -85,7 +88,7 @@ func main() {
 	correctnessRequestChan := make(chan types.CorrectnessRequest, 1)
 
 	rdb := redis.NewClient(&redis.Options{
-	    Addr:     os.Getenv("REDIS_HOST"),
+	    Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
 	    Password: "",                      
 	    DB:       0,                      
 	})
@@ -103,7 +106,6 @@ func main() {
 	go goroutines.RunGo7(shadowConn, shadowEgressChan, logGo7)
 	go goroutines.RunGo4(ingressChan, egressChan, scoreRequestChan, logGo4)
 	go goroutines.RunGo3(go3CorrectnessChan, shadowEgressChan, correctnessRequestChan, logGo3)
-	go goroutines.RunGo6(client, cfg, schemaFields, scoreRequestChan, correctnessRequestChan, logGo6)
 	go goroutines.RunGo6(rdb, cfg, schemaFields, scoreRequestChan, correctnessRequestChan, logGo6)
 	// 11. Block main forever. Pod deletion handles cleanup.
 	select {}

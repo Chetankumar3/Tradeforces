@@ -1,5 +1,6 @@
 #include "contestant_engine/tcp_ingress.h"
 
+#include "order_manager/order_types.h"
 #include "utils/logger.h"
 
 #include <chrono>
@@ -40,23 +41,6 @@ std::string currentTimestamp() {
     return oss.str();
 }
 
-bool hasRequiredFields(const fix_engine::FIXMessage& message) {
-    if (!message.hasField(11) || !message.hasField(35)) {
-        return false;
-    }
-
-    switch (message.getMsgType()) {
-        case fix_engine::MsgType::NEW_ORDER_SINGLE:
-            return message.hasField(38) && message.hasField(40) &&
-                   message.hasField(44) && message.hasField(54) &&
-                   message.hasField(55) && message.hasField(59);
-        case fix_engine::MsgType::ORDER_CANCEL_REQUEST:
-            return message.hasField(41);
-        default:
-            return false;
-    }
-}
-
 bool parseUnsigned(const std::string& text, size_t& value) {
     if (text.empty()) {
         return false;
@@ -76,6 +60,46 @@ bool parseUnsigned(const std::string& text, size_t& value) {
     return true;
 }
 } // namespace
+
+bool TcpIngress::hasRequiredFields(const fix_engine::FIXMessage& message) {
+    if (!message.hasField(11) || !message.hasField(35)) {
+        return false;
+    }
+
+    switch (message.getMsgType()) {
+        case fix_engine::MsgType::NEW_ORDER_SINGLE: {
+            if (!message.hasField(38) || !message.hasField(40) ||
+                !message.hasField(54) || !message.hasField(55) ||
+                !message.hasField(59)) {
+                return false;
+            }
+
+            const auto ordTypeText = message.getField(40);
+            if (!ordTypeText) {
+                return false;
+            }
+
+            try {
+                const auto orderType = static_cast<fix_gateway::order_manager::OrderType>(
+                    std::stoi(*ordTypeText));
+
+                if (orderType == fix_gateway::order_manager::OrderType::LIMIT ||
+                    orderType == fix_gateway::order_manager::OrderType::STOP ||
+                    orderType == fix_gateway::order_manager::OrderType::STOP_LIMIT) {
+                    return message.hasField(44);
+                }
+            } catch (const std::exception&) {
+                return false;
+            }
+
+            return true;
+        }
+        case fix_engine::MsgType::ORDER_CANCEL_REQUEST:
+            return message.hasField(41);
+        default:
+            return false;
+    }
+}
 
 TcpIngress::TcpIngress(fix_engine::FIXSessionManager& sessionManager)
     : sessionManager_(sessionManager) {}
@@ -229,7 +253,7 @@ void TcpIngress::routeMessage(const std::string& rawMessage) {
 
     fix_engine::FIXMessage message;
     try {
-        if (!message.parse(rawMessage) || !hasRequiredFields(message)) {
+        if (!message.parse(rawMessage) || !TcpIngress::hasRequiredFields(message)) {
             logger->warn("Skipping unsupported or incomplete contestant ingress FIX message");
             return;
         }

@@ -21,6 +21,8 @@ public:
     void stop();
 
 private:
+    static bool hasRequiredFields(const fix_engine::FIXMessage& message);
+
     void acceptLoop();
     void readLoop(boost::asio::ip::tcp::socket& socket);
     void routeMessage(const std::string& rawMessage);

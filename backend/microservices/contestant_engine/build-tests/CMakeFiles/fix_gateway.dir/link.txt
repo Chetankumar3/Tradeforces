@@ -1,0 +1,1 @@
+/usr/bin/g++ -O3 -DNDEBUG -march=native -Wl,--dependency-file=CMakeFiles/fix_gateway.dir/link.d CMakeFiles/fix_gateway.dir/src/main.cpp.o -o fix_gateway  libfix_engine_lib.a

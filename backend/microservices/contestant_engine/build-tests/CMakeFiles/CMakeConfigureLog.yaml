@@ -11,181 +11,6 @@ events:
   -
     kind: "find-v1"
     backtrace:
-      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeMinGWFindMake.cmake:5 (find_program)"
-      - "CMakeLists.txt:2 (project)"
-    mode: "program"
-    variable: "CMAKE_MAKE_PROGRAM"
-    description: "Path to a program."
-    settings:
-      SearchFramework: "NEVER"
-      SearchAppBundle: "NEVER"
-      CMAKE_FIND_USE_CMAKE_PATH: true
-      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
-      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
-      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
-      CMAKE_FIND_USE_INSTALL_PREFIX: true
-    names:
-      - "mingw32-make.exe"
-    candidate_directories:
-      - "C:/Users/cheta/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/"
-      - "C:/Users/cheta/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/"
-      - "C:/Extra/Tesseract OCR/ImageMagick-7.1.2-Q16-HDRI/"
-      - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/"
-      - "C:/Windows/System32/"
-      - "C:/Windows/"
-      - "C:/Windows/System32/wbem/"
-      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
-      - "C:/Windows/System32/OpenSSH/"
-      - "C:/msys64/ucrt64/bin/"
-      - "C:/Extra/Node JS/Original/"
-      - "C:/ProgramData/chocolatey/bin/"
-      - "C:/Program Files/clarinet/bin/"
-      - "C:/msys64/mingw64/bin/"
-      - "C:/Users/cheta/AppData/Local/Programs/Tesseract-OCR/"
-      - "C:/Extra/Tesseract OCR/gs10.06.0/bin/"
-      - "C:/Program Files/PostgreSQL/18/bin/"
-      - "C:/Program Files/Cloudflare/Cloudflare WARP/"
-      - "C:/Program Files/k6/"
-      - "C:/Program Files/Memurai/"
-      - "C:/Program Files/Amazon/AWSCLIV2/"
-      - "C:/Program Files/PuTTY/"
-      - "C:/Users/admin/AppData/Local/Microsoft/WindowsApps/"
-      - "C:/Program Files/LLVM/bin/"
-      - "C:/wsl-aliases/"
-      - "C:/Extra/terraform_1.15.2_windows_amd64/"
-      - "C:/Program Files/Go/bin/"
-      - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
-      - "C:/Users/cheta/scoop/shims/"
-      - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
-      - "C:/Users/cheta/AppData/Local/Programs/Microsoft VS Code/bin/"
-      - "C:/Users/cheta/AppData/Roaming/npm/"
-      - "C:/Extra/Git/Git/cmd/"
-      - "C:/Users/cheta/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/"
-      - "C:/Users/cheta/AppData/Local/Programs/Windsurf/bin/"
-      - "C:/Users/cheta/go/bin/"
-      - "/REGISTRY-NOTFOUND/bin/"
-      - "c:/MinGW/bin/"
-      - "/MinGW/bin/"
-      - "/REGISTRY-NOTFOUND/MinGW/bin/"
-    searched_directories:
-      - "C:/Users/cheta/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/mingw32-make.exe"
-      - "C:/Extra/Tesseract OCR/ImageMagick-7.1.2-Q16-HDRI/mingw32-make.exe.com"
-      - "C:/Extra/Tesseract OCR/ImageMagick-7.1.2-Q16-HDRI/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/mingw32-make.exe"
-      - "C:/Windows/System32/mingw32-make.exe.com"
-      - "C:/Windows/System32/mingw32-make.exe"
-      - "C:/Windows/mingw32-make.exe.com"
-      - "C:/Windows/mingw32-make.exe"
-      - "C:/Windows/System32/wbem/mingw32-make.exe.com"
-      - "C:/Windows/System32/wbem/mingw32-make.exe"
-      - "C:/Windows/System32/WindowsPowerShell/v1.0/mingw32-make.exe.com"
-      - "C:/Windows/System32/WindowsPowerShell/v1.0/mingw32-make.exe"
-      - "C:/Windows/System32/OpenSSH/mingw32-make.exe.com"
-      - "C:/Windows/System32/OpenSSH/mingw32-make.exe"
-      - "C:/msys64/ucrt64/bin/mingw32-make.exe.com"
-      - "C:/msys64/ucrt64/bin/mingw32-make.exe"
-      - "C:/Extra/Node JS/Original/mingw32-make.exe.com"
-      - "C:/Extra/Node JS/Original/mingw32-make.exe"
-      - "C:/ProgramData/chocolatey/bin/mingw32-make.exe.com"
-      - "C:/ProgramData/chocolatey/bin/mingw32-make.exe"
-      - "C:/Program Files/clarinet/bin/mingw32-make.exe.com"
-      - "C:/Program Files/clarinet/bin/mingw32-make.exe"
-      - "C:/msys64/mingw64/bin/mingw32-make.exe.com"
-      - "C:/msys64/mingw64/bin/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Local/Programs/Tesseract-OCR/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Local/Programs/Tesseract-OCR/mingw32-make.exe"
-      - "C:/Extra/Tesseract OCR/gs10.06.0/bin/mingw32-make.exe.com"
-      - "C:/Extra/Tesseract OCR/gs10.06.0/bin/mingw32-make.exe"
-      - "C:/Program Files/PostgreSQL/18/bin/mingw32-make.exe.com"
-      - "C:/Program Files/PostgreSQL/18/bin/mingw32-make.exe"
-      - "C:/Program Files/Cloudflare/Cloudflare WARP/mingw32-make.exe.com"
-      - "C:/Program Files/Cloudflare/Cloudflare WARP/mingw32-make.exe"
-      - "C:/Program Files/k6/mingw32-make.exe.com"
-      - "C:/Program Files/k6/mingw32-make.exe"
-      - "C:/Program Files/Memurai/mingw32-make.exe.com"
-      - "C:/Program Files/Memurai/mingw32-make.exe"
-      - "C:/Program Files/Amazon/AWSCLIV2/mingw32-make.exe.com"
-      - "C:/Program Files/Amazon/AWSCLIV2/mingw32-make.exe"
-      - "C:/Program Files/PuTTY/mingw32-make.exe.com"
-      - "C:/Program Files/PuTTY/mingw32-make.exe"
-      - "C:/Users/admin/AppData/Local/Microsoft/WindowsApps/mingw32-make.exe.com"
-      - "C:/Users/admin/AppData/Local/Microsoft/WindowsApps/mingw32-make.exe"
-      - "C:/Program Files/LLVM/bin/mingw32-make.exe.com"
-      - "C:/Program Files/LLVM/bin/mingw32-make.exe"
-      - "C:/wsl-aliases/mingw32-make.exe.com"
-      - "C:/wsl-aliases/mingw32-make.exe"
-      - "C:/Extra/terraform_1.15.2_windows_amd64/mingw32-make.exe.com"
-      - "C:/Extra/terraform_1.15.2_windows_amd64/mingw32-make.exe"
-      - "C:/Program Files/Go/bin/mingw32-make.exe.com"
-      - "C:/Program Files/Go/bin/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/mingw32-make.exe"
-      - "C:/Users/cheta/scoop/shims/mingw32-make.exe.com"
-      - "C:/Users/cheta/scoop/shims/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Local/Programs/Microsoft VS Code/bin/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Local/Programs/Microsoft VS Code/bin/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Roaming/npm/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Roaming/npm/mingw32-make.exe"
-      - "C:/Extra/Git/Git/cmd/mingw32-make.exe.com"
-      - "C:/Extra/Git/Git/cmd/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/mingw32-make.exe"
-      - "C:/Users/cheta/AppData/Local/Programs/Windsurf/bin/mingw32-make.exe.com"
-      - "C:/Users/cheta/AppData/Local/Programs/Windsurf/bin/mingw32-make.exe"
-      - "C:/Users/cheta/go/bin/mingw32-make.exe.com"
-      - "C:/Users/cheta/go/bin/mingw32-make.exe"
-      - "/REGISTRY-NOTFOUND/bin/mingw32-make.exe.com"
-      - "/REGISTRY-NOTFOUND/bin/mingw32-make.exe"
-      - "c:/MinGW/bin/mingw32-make.exe.com"
-    found: "C:/MinGW/bin/mingw32-make.exe"
-    search_context:
-      ENV{PATH}:
-        - "c:\\Users\\cheta\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
-        - "c:\\Users\\cheta\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
-        - "C:\\Extra\\Tesseract OCR\\ImageMagick-7.1.2-Q16-HDRI"
-        - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
-        - "C:\\WINDOWS\\system32"
-        - "C:\\WINDOWS"
-        - "C:\\WINDOWS\\System32\\Wbem"
-        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
-        - "C:\\WINDOWS\\System32\\OpenSSH\\"
-        - "C:\\msys64\\ucrt64\\bin"
-        - "C:\\Extra\\Node JS\\Original\\"
-        - "C:\\ProgramData\\chocolatey\\bin"
-        - "C:\\Program Files\\clarinet\\bin\\"
-        - "C:\\msys64\\mingw64\\bin"
-        - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Tesseract-OCR"
-        - "C:\\Extra\\Tesseract OCR\\gs10.06.0\\bin"
-        - "C:\\Program Files\\PostgreSQL\\18\\bin"
-        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
-        - "C:\\Program Files\\k6\\"
-        - "C:\\Program Files\\Memurai\\"
-        - "C:\\Program Files\\Amazon\\AWSCLIV2\\"
-        - "C:\\Program Files\\PuTTY\\"
-        - "C:\\Users\\admin\\AppData\\Local\\Microsoft\\WindowsApps"
-        - "C:\\Program Files\\LLVM\\bin"
-        - "C:\\wsl-aliases"
-        - "C:\\Extra\\terraform_1.15.2_windows_amd64"
-        - "C:\\Program Files\\Go\\bin"
-        - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
-        - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
-        - "C:\\Users\\cheta\\scoop\\shims"
-        - "C:\\Users\\cheta\\AppData\\Local\\Microsoft\\WindowsApps"
-        - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
-        - "C:\\Users\\cheta\\AppData\\Roaming\\npm"
-        - "C:\\Extra\\Git\\Git\\cmd"
-        - "C:\\Users\\cheta\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
-        - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Windsurf\\bin"
-        - "C:\\Users\\cheta\\go\\bin"
-  -
-    kind: "find-v1"
-    backtrace:
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:468 (find_file)"
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:506 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
@@ -237,6 +62,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -267,7 +93,7 @@ events:
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.exe"
       
       The CXX compiler identification is GNU, found in:
-        D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/4.3.3/CompilerIdCXX/a.exe
+        D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/4.3.3/CompilerIdCXX/a.exe
       
   -
     kind: "find-v1"
@@ -316,6 +142,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -357,6 +184,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -414,6 +242,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -455,6 +284,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -512,6 +342,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -553,6 +384,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -610,6 +442,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -651,6 +484,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -708,6 +542,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -749,6 +584,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -806,6 +642,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -847,6 +684,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -904,6 +742,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -945,6 +784,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -1002,6 +842,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -1043,6 +884,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -1100,6 +942,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -1141,6 +984,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -1198,6 +1042,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -1239,6 +1084,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -1296,6 +1142,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -1387,6 +1234,9 @@ events:
       - "C:/Program Files/Go/bin/tapi.com"
       - "C:/Program Files/Go/bin/tapi.exe"
       - "C:/Program Files/Go/bin/tapi"
+      - "C:/Program Files/CMake/bin/tapi.com"
+      - "C:/Program Files/CMake/bin/tapi.exe"
+      - "C:/Program Files/CMake/bin/tapi"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/tapi.com"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/tapi.exe"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/tapi"
@@ -1444,6 +1294,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -1504,6 +1355,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -1595,6 +1447,9 @@ events:
       - "C:/Program Files/Go/bin/gcc-ar-15.2.com"
       - "C:/Program Files/Go/bin/gcc-ar-15.2.exe"
       - "C:/Program Files/Go/bin/gcc-ar-15.2"
+      - "C:/Program Files/CMake/bin/gcc-ar-15.2.com"
+      - "C:/Program Files/CMake/bin/gcc-ar-15.2.exe"
+      - "C:/Program Files/CMake/bin/gcc-ar-15.2"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar-15.2.com"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar-15.2.exe"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar-15.2"
@@ -1703,6 +1558,9 @@ events:
       - "C:/Program Files/Go/bin/gcc-ar-15.com"
       - "C:/Program Files/Go/bin/gcc-ar-15.exe"
       - "C:/Program Files/Go/bin/gcc-ar-15"
+      - "C:/Program Files/CMake/bin/gcc-ar-15.com"
+      - "C:/Program Files/CMake/bin/gcc-ar-15.exe"
+      - "C:/Program Files/CMake/bin/gcc-ar-15"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar-15.com"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar-15.exe"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar-15"
@@ -1811,6 +1669,9 @@ events:
       - "C:/Program Files/Go/bin/gcc-ar15.com"
       - "C:/Program Files/Go/bin/gcc-ar15.exe"
       - "C:/Program Files/Go/bin/gcc-ar15"
+      - "C:/Program Files/CMake/bin/gcc-ar15.com"
+      - "C:/Program Files/CMake/bin/gcc-ar15.exe"
+      - "C:/Program Files/CMake/bin/gcc-ar15"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar15.com"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar15.exe"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ar15"
@@ -1869,6 +1730,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -1929,6 +1791,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -2020,6 +1883,9 @@ events:
       - "C:/Program Files/Go/bin/gcc-ranlib-15.2.com"
       - "C:/Program Files/Go/bin/gcc-ranlib-15.2.exe"
       - "C:/Program Files/Go/bin/gcc-ranlib-15.2"
+      - "C:/Program Files/CMake/bin/gcc-ranlib-15.2.com"
+      - "C:/Program Files/CMake/bin/gcc-ranlib-15.2.exe"
+      - "C:/Program Files/CMake/bin/gcc-ranlib-15.2"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib-15.2.com"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib-15.2.exe"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib-15.2"
@@ -2128,6 +1994,9 @@ events:
       - "C:/Program Files/Go/bin/gcc-ranlib-15.com"
       - "C:/Program Files/Go/bin/gcc-ranlib-15.exe"
       - "C:/Program Files/Go/bin/gcc-ranlib-15"
+      - "C:/Program Files/CMake/bin/gcc-ranlib-15.com"
+      - "C:/Program Files/CMake/bin/gcc-ranlib-15.exe"
+      - "C:/Program Files/CMake/bin/gcc-ranlib-15"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib-15.com"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib-15.exe"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib-15"
@@ -2236,6 +2105,9 @@ events:
       - "C:/Program Files/Go/bin/gcc-ranlib15.com"
       - "C:/Program Files/Go/bin/gcc-ranlib15.exe"
       - "C:/Program Files/Go/bin/gcc-ranlib15"
+      - "C:/Program Files/CMake/bin/gcc-ranlib15.com"
+      - "C:/Program Files/CMake/bin/gcc-ranlib15.exe"
+      - "C:/Program Files/CMake/bin/gcc-ranlib15"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib15.com"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib15.exe"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/gcc-ranlib15"
@@ -2294,6 +2166,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -2354,6 +2227,7 @@ events:
       - "C:/wsl-aliases/"
       - "C:/Extra/terraform_1.15.2_windows_amd64/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/cheta/scoop/shims/"
       - "C:/Users/cheta/AppData/Local/Microsoft/WindowsApps/"
@@ -2434,6 +2308,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -2459,8 +2334,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-gko5k5"
-      binary: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-gko5k5"
+      source: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-y2lq86"
+      binary: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-y2lq86"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -2471,13 +2346,13 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-gko5k5'
+        Change Dir: 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-y2lq86'
         
-        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/MinGW/bin/mingw32-make.exe -f Makefile cmTC_59c1d/fast
-        C:/MinGW/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_59c1d.dir\\build.make CMakeFiles/cmTC_59c1d.dir/build
-        mingw32-make.exe[1]: Entering directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-gko5k5'
-        Building CXX object CMakeFiles/cmTC_59c1d.dir/CMakeCXXCompilerABI.cpp.obj
-        C:\\msys64\\ucrt64\\bin\\g++.exe   -v -o CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj -c "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/MinGW/bin/mingw32-make.exe -f Makefile cmTC_00e55/fast
+        C:/MinGW/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_00e55.dir\\build.make CMakeFiles/cmTC_00e55.dir/build
+        mingw32-make.exe[1]: Entering directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-y2lq86'
+        Building CXX object CMakeFiles/cmTC_00e55.dir/CMakeCXXCompilerABI.cpp.obj
+        C:\\msys64\\ucrt64\\bin\\g++.exe   -v -o CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj -c "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
         Using built-in specs.
         COLLECT_GCC=C:\\msys64\\ucrt64\\bin\\g++.exe
         Target: x86_64-w64-mingw32
@@ -2485,8 +2360,8 @@ events:
         Thread model: posix
         Supported LTO compression algorithms: zlib zstd
         gcc version 15.2.0 (Rev8, Built by MSYS2 project) 
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_59c1d.dir\\'
-         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/cc1plus.exe -quiet -v -iprefix C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/ -D_REENTRANT C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles\\cmTC_59c1d.dir\\ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=nocona -version -o C:\\Users\\cheta\\AppData\\Local\\Temp\\cchShOgr.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_00e55.dir\\'
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/cc1plus.exe -quiet -v -iprefix C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/ -D_REENTRANT C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles\\cmTC_00e55.dir\\ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=nocona -version -o C:\\Users\\cheta\\AppData\\Local\\Temp\\ccoFxIJE.s
         GNU C++17 (Rev8, Built by MSYS2 project) version 15.2.0 (x86_64-w64-mingw32)
         	compiled by GNU C version 15.2.0, GMP version 6.3.0, MPFR version 4.2.2, MPC version 1.3.1, isl version isl-0.27-GMP
         
@@ -2511,14 +2386,14 @@ events:
          C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/include-fixed
         End of search list.
         Compiler executable checksum: 3a1a95c83f0136a64748ec8c5a2a87f3
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_59c1d.dir\\'
-         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj C:\\Users\\cheta\\AppData\\Local\\Temp\\cchShOgr.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_00e55.dir\\'
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj C:\\Users\\cheta\\AppData\\Local\\Temp\\ccoFxIJE.s
         GNU assembler version 2.45 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.45
         COMPILER_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/;C:/msys64/ucrt64/bin/../lib/gcc/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/
         LIBRARY_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/;C:/msys64/ucrt64/bin/../lib/gcc/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.'
-        Linking CXX executable cmTC_59c1d.exe
-        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_59c1d.dir\\link.txt --verbose=1
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.'
+        Linking CXX executable cmTC_00e55.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_00e55.dir\\link.txt --verbose=1
         Using built-in specs.
         COLLECT_GCC=C:\\msys64\\ucrt64\\bin\\g++.exe
         COLLECT_LTO_WRAPPER=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe
@@ -2529,16 +2404,16 @@ events:
         gcc version 15.2.0 (Rev8, Built by MSYS2 project) 
         COMPILER_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/;C:/msys64/ucrt64/bin/../lib/gcc/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/
         LIBRARY_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/;C:/msys64/ucrt64/bin/../lib/gcc/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/;C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_59c1d.exe' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_59c1d.'
-         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/collect2.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccNE7cLh.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_59c1d.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../.. -v --whole-archive CMakeFiles\\cmTC_59c1d.dir/objects.a --no-whole-archive --out-implib libcmTC_59c1d.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_00e55.exe' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_00e55.'
+         C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/collect2.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccfoXlIn.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_00e55.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../.. -v --whole-archive CMakeFiles\\cmTC_00e55.dir/objects.a --no-whole-archive --out-implib libcmTC_00e55.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o
         collect2 version 15.2.0
-        C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccNE7cLh.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_59c1d.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../.. -v --whole-archive CMakeFiles\\cmTC_59c1d.dir/objects.a --no-whole-archive --out-implib libcmTC_59c1d.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o
+        C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccfoXlIn.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_00e55.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../.. -v --whole-archive CMakeFiles\\cmTC_00e55.dir/objects.a --no-whole-archive --out-implib libcmTC_00e55.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o
         GNU ld (GNU Binutils) 2.45
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_59c1d.exe' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_59c1d.'
-        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_59c1d.dir/objects.a
-        C:\\msys64\\ucrt64\\bin\\ar.exe qc CMakeFiles\\cmTC_59c1d.dir/objects.a @CMakeFiles\\cmTC_59c1d.dir\\objects1.rsp
-        C:\\msys64\\ucrt64\\bin\\g++.exe  -v -Wl,-v -Wl,--whole-archive CMakeFiles\\cmTC_59c1d.dir/objects.a -Wl,--no-whole-archive -o cmTC_59c1d.exe -Wl,--out-implib,libcmTC_59c1d.dll.a -Wl,--major-image-version,0,--minor-image-version,0
-        mingw32-make.exe[1]: Leaving directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-gko5k5'
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_00e55.exe' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_00e55.'
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_00e55.dir/objects.a
+        C:\\msys64\\ucrt64\\bin\\ar.exe qc CMakeFiles\\cmTC_00e55.dir/objects.a @CMakeFiles\\cmTC_00e55.dir\\objects1.rsp
+        C:\\msys64\\ucrt64\\bin\\g++.exe  -v -Wl,-v -Wl,--whole-archive CMakeFiles\\cmTC_00e55.dir/objects.a -Wl,--no-whole-archive -o cmTC_00e55.exe -Wl,--out-implib,libcmTC_00e55.dll.a -Wl,--major-image-version,0,--minor-image-version,0
+        mingw32-make.exe[1]: Leaving directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-y2lq86'
         
       exitCode: 0
   -
@@ -2577,13 +2452,13 @@ events:
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
-        ignore line: [Change Dir: 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-gko5k5']
+        ignore line: [Change Dir: 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-y2lq86']
         ignore line: []
-        ignore line: [Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/MinGW/bin/mingw32-make.exe -f Makefile cmTC_59c1d/fast]
-        ignore line: [C:/MinGW/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_59c1d.dir\\build.make CMakeFiles/cmTC_59c1d.dir/build]
-        ignore line: [mingw32-make.exe[1]: Entering directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-gko5k5']
-        ignore line: [Building CXX object CMakeFiles/cmTC_59c1d.dir/CMakeCXXCompilerABI.cpp.obj]
-        ignore line: [C:\\msys64\\ucrt64\\bin\\g++.exe   -v -o CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj -c "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"]
+        ignore line: [Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/MinGW/bin/mingw32-make.exe -f Makefile cmTC_00e55/fast]
+        ignore line: [C:/MinGW/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_00e55.dir\\build.make CMakeFiles/cmTC_00e55.dir/build]
+        ignore line: [mingw32-make.exe[1]: Entering directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-y2lq86']
+        ignore line: [Building CXX object CMakeFiles/cmTC_00e55.dir/CMakeCXXCompilerABI.cpp.obj]
+        ignore line: [C:\\msys64\\ucrt64\\bin\\g++.exe   -v -o CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj -c "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=C:\\msys64\\ucrt64\\bin\\g++.exe]
         ignore line: [Target: x86_64-w64-mingw32]
@@ -2591,8 +2466,8 @@ events:
         ignore line: [Thread model: posix]
         ignore line: [Supported LTO compression algorithms: zlib zstd]
         ignore line: [gcc version 15.2.0 (Rev8  Built by MSYS2 project) ]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_59c1d.dir\\']
-        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/cc1plus.exe -quiet -v -iprefix C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/ -D_REENTRANT C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles\\cmTC_59c1d.dir\\ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=nocona -version -o C:\\Users\\cheta\\AppData\\Local\\Temp\\cchShOgr.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_00e55.dir\\']
+        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/cc1plus.exe -quiet -v -iprefix C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/ -D_REENTRANT C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles\\cmTC_00e55.dir\\ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=nocona -version -o C:\\Users\\cheta\\AppData\\Local\\Temp\\ccoFxIJE.s]
         ignore line: [GNU C++17 (Rev8  Built by MSYS2 project) version 15.2.0 (x86_64-w64-mingw32)]
         ignore line: [	compiled by GNU C version 15.2.0  GMP version 6.3.0  MPFR version 4.2.2  MPC version 1.3.1  isl version isl-0.27-GMP]
         ignore line: []
@@ -2617,8 +2492,8 @@ events:
         ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/include-fixed]
         ignore line: [End of search list.]
         ignore line: [Compiler executable checksum: 3a1a95c83f0136a64748ec8c5a2a87f3]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_59c1d.dir\\']
-        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj C:\\Users\\cheta\\AppData\\Local\\Temp\\cchShOgr.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_00e55.dir\\']
+        ignore line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj C:\\Users\\cheta\\AppData\\Local\\Temp\\ccoFxIJE.s]
         ignore line: [GNU assembler version 2.45 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.45]
         ignore line: [COMPILER_PATH=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/]
         ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/]
@@ -2629,9 +2504,9 @@ events:
         ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/]
         ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/]
         ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_59c1d.dir\\CMakeCXXCompilerABI.cpp.']
-        ignore line: [Linking CXX executable cmTC_59c1d.exe]
-        ignore line: ["C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_59c1d.dir\\link.txt --verbose=1]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'CMakeFiles\\cmTC_00e55.dir\\CMakeCXXCompilerABI.cpp.']
+        ignore line: [Linking CXX executable cmTC_00e55.exe]
+        ignore line: ["C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_00e55.dir\\link.txt --verbose=1]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=C:\\msys64\\ucrt64\\bin\\g++.exe]
         ignore line: [COLLECT_LTO_WRAPPER=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe]
@@ -2649,13 +2524,13 @@ events:
         ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/]
         ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/]
         ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_59c1d.exe' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_59c1d.']
-        link line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/collect2.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccNE7cLh.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_59c1d.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../.. -v --whole-archive CMakeFiles\\cmTC_59c1d.dir/objects.a --no-whole-archive --out-implib libcmTC_59c1d.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_00e55.exe' '-shared-libgcc' '-mtune=generic' '-march=nocona' '-dumpdir' 'cmTC_00e55.']
+        link line: [ C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/collect2.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccfoXlIn.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_00e55.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../.. -v --whole-archive CMakeFiles\\cmTC_00e55.dir/objects.a --no-whole-archive --out-implib libcmTC_00e55.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o]
           arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/collect2.exe] ==> ignore
           arg [-plugin] ==> ignore
           arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll] ==> ignore
           arg [-plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe] ==> ignore
-          arg [-plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccNE7cLh.res] ==> ignore
+          arg [-plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccfoXlIn.res] ==> ignore
           arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
@@ -2677,7 +2552,7 @@ events:
           arg [i386pep] ==> ignore
           arg [-Bdynamic] ==> search dynamic
           arg [-o] ==> ignore
-          arg [cmTC_59c1d.exe] ==> ignore
+          arg [cmTC_00e55.exe] ==> ignore
           arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o] ==> obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o]
           arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o] ==> obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o]
           arg [-LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0] ==> dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0]
@@ -2688,10 +2563,10 @@ events:
           arg [-LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../..] ==> dir [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../..]
           arg [-v] ==> ignore
           arg [--whole-archive] ==> ignore
-          arg [CMakeFiles\\cmTC_59c1d.dir/objects.a] ==> ignore
+          arg [CMakeFiles\\cmTC_00e55.dir/objects.a] ==> ignore
           arg [--no-whole-archive] ==> ignore
           arg [--out-implib] ==> ignore
-          arg [libcmTC_59c1d.dll.a] ==> ignore
+          arg [libcmTC_00e55.dll.a] ==> ignore
           arg [--major-image-version] ==> ignore
           arg [0] ==> ignore
           arg [--minor-image-version] ==> ignore
@@ -2717,7 +2592,7 @@ events:
           arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o] ==> obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o]
           arg [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o] ==> obj [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o]
         ignore line: [collect2 version 15.2.0]
-        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccNE7cLh.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_59c1d.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../.. -v --whole-archive CMakeFiles\\cmTC_59c1d.dir/objects.a --no-whole-archive --out-implib libcmTC_59c1d.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o]
+        ignore line: [C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe -plugin C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/liblto_plugin.dll -plugin-opt=C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\cheta\\AppData\\Local\\Temp\\ccfoXlIn.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_00e55.exe C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/crt2.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtbegin.o -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0 -LC:/msys64/ucrt64/bin/../lib/gcc -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/lib -LC:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../.. -v --whole-archive CMakeFiles\\cmTC_00e55.dir/objects.a --no-whole-archive --out-implib libcmTC_00e55.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmingwex -lmsvcrt -lkernel32 C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../lib/default-manifest.o C:/msys64/ucrt64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/crtend.o]
         linker tool for 'CXX': C:/msys64/ucrt64/x86_64-w64-mingw32/bin/ld.exe
         remove lib [msvcrt]
         remove lib [msvcrt]
@@ -2758,8 +2633,8 @@ events:
     checks:
       - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
     directories:
-      source: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-yaqyyy"
-      binary: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-yaqyyy"
+      source: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-4buwjp"
+      binary: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-4buwjp"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g -O0 -Wall -Wextra -Wpedantic"
@@ -2769,19 +2644,19 @@ events:
       variable: "CMAKE_HAVE_LIBC_PTHREAD"
       cached: true
       stdout: |
-        Change Dir: 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-yaqyyy'
+        Change Dir: 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-4buwjp'
         
-        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/MinGW/bin/mingw32-make.exe -f Makefile cmTC_dfdba/fast
-        C:/MinGW/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_dfdba.dir\\build.make CMakeFiles/cmTC_dfdba.dir/build
-        mingw32-make.exe[1]: Entering directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-yaqyyy'
-        Building CXX object CMakeFiles/cmTC_dfdba.dir/src.cxx.obj
-        C:\\msys64\\ucrt64\\bin\\g++.exe -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++20 -o CMakeFiles\\cmTC_dfdba.dir\\src.cxx.obj -c "D:\\IIIT Naya Raipur\\Dev\\Tradeforces\\backend\\microservices\\shadow_engine\\build-gcc\\CMakeFiles\\CMakeScratch\\TryCompile-yaqyyy\\src.cxx"
-        Linking CXX executable cmTC_dfdba.exe
-        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_dfdba.dir\\link.txt --verbose=1
-        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_dfdba.dir/objects.a
-        C:\\msys64\\ucrt64\\bin\\ar.exe qc CMakeFiles\\cmTC_dfdba.dir/objects.a @CMakeFiles\\cmTC_dfdba.dir\\objects1.rsp
-        C:\\msys64\\ucrt64\\bin\\g++.exe -Wl,--whole-archive CMakeFiles\\cmTC_dfdba.dir/objects.a -Wl,--no-whole-archive -o cmTC_dfdba.exe -Wl,--out-implib,libcmTC_dfdba.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_dfdba.dir\\linkLibs.rsp
-        mingw32-make.exe[1]: Leaving directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/CMakeScratch/TryCompile-yaqyyy'
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/MinGW/bin/mingw32-make.exe -f Makefile cmTC_8e531/fast
+        C:/MinGW/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_8e531.dir\\build.make CMakeFiles/cmTC_8e531.dir/build
+        mingw32-make.exe[1]: Entering directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-4buwjp'
+        Building CXX object CMakeFiles/cmTC_8e531.dir/src.cxx.obj
+        C:\\msys64\\ucrt64\\bin\\g++.exe -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++20 -o CMakeFiles\\cmTC_8e531.dir\\src.cxx.obj -c "D:\\IIIT Naya Raipur\\Dev\\Tradeforces\\backend\\microservices\\contestant_engine\\build-tests\\CMakeFiles\\CMakeScratch\\TryCompile-4buwjp\\src.cxx"
+        Linking CXX executable cmTC_8e531.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_8e531.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_8e531.dir/objects.a
+        C:\\msys64\\ucrt64\\bin\\ar.exe qc CMakeFiles\\cmTC_8e531.dir/objects.a @CMakeFiles\\cmTC_8e531.dir\\objects1.rsp
+        C:\\msys64\\ucrt64\\bin\\g++.exe -Wl,--whole-archive CMakeFiles\\cmTC_8e531.dir/objects.a -Wl,--no-whole-archive -o cmTC_8e531.exe -Wl,--out-implib,libcmTC_8e531.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_8e531.dir\\linkLibs.rsp
+        mingw32-make.exe[1]: Leaving directory 'D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/CMakeScratch/TryCompile-4buwjp'
         
       exitCode: 0
   -
@@ -2829,27 +2704,27 @@ events:
         CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
     candidates:
       -
-        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/pkgRedirects/BoostConfig.cmake"
+        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/pkgRedirects/BoostConfig.cmake"
         mode: "config"
         reason: "no_exist"
       -
-        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/pkgRedirects/boost-config.cmake"
+        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/pkgRedirects/boost-config.cmake"
         mode: "config"
         reason: "no_exist"
       -
-        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/pkgRedirects/lib/cps/Boost.cps"
+        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/pkgRedirects/lib/cps/Boost.cps"
         mode: "cps"
         reason: "no_exist"
       -
-        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/pkgRedirects/lib/cps/boost.cps"
+        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/pkgRedirects/lib/cps/boost.cps"
         mode: "cps"
         reason: "no_exist"
       -
-        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/pkgRedirects/share/cps/Boost.cps"
+        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/pkgRedirects/share/cps/Boost.cps"
         mode: "cps"
         reason: "no_exist"
       -
-        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/shadow_engine/build-gcc/CMakeFiles/pkgRedirects/share/cps/boost.cps"
+        path: "D:/IIIT Naya Raipur/Dev/Tradeforces/backend/microservices/contestant_engine/build-tests/CMakeFiles/pkgRedirects/share/cps/boost.cps"
         mode: "cps"
         reason: "no_exist"
       -
@@ -3477,6 +3352,30 @@ events:
         mode: "cps"
         reason: "no_exist"
       -
+        path: "C:/Program Files/CMake/BoostConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/boost-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/lib/cps/Boost.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/lib/cps/boost.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/share/cps/Boost.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/share/cps/boost.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
         path: "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/BoostConfig.cmake"
         mode: "config"
         reason: "no_exist"
@@ -3748,30 +3647,6 @@ events:
         path: "C:/Program Files (x86)/share/cps/boost.cps"
         mode: "cps"
         reason: "no_exist"
-      -
-        path: "C:/Program Files/CMake/BoostConfig.cmake"
-        mode: "config"
-        reason: "no_exist"
-      -
-        path: "C:/Program Files/CMake/boost-config.cmake"
-        mode: "config"
-        reason: "no_exist"
-      -
-        path: "C:/Program Files/CMake/lib/cps/Boost.cps"
-        mode: "cps"
-        reason: "no_exist"
-      -
-        path: "C:/Program Files/CMake/lib/cps/boost.cps"
-        mode: "cps"
-        reason: "no_exist"
-      -
-        path: "C:/Program Files/CMake/share/cps/Boost.cps"
-        mode: "cps"
-        reason: "no_exist"
-      -
-        path: "C:/Program Files/CMake/share/cps/boost.cps"
-        mode: "cps"
-        reason: "no_exist"
     found: null
     search_context:
       ENV{PATH}:
@@ -3802,6 +3677,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"
@@ -7536,6 +7412,143 @@ events:
       - "C:/Program Files/Go/bin/boost/boost-1_75/"
       - "C:/Program Files/Go/bin/boost/boost_1_75/"
       - "C:/Program Files/Go/bin/"
+      - "C:/Program Files/CMake/bin/boost-1_91_0/"
+      - "C:/Program Files/CMake/bin/boost_1_91_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_91_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_91_0/"
+      - "C:/Program Files/CMake/bin/boost-1_91/"
+      - "C:/Program Files/CMake/bin/boost_1_91/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_91/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_91/"
+      - "C:/Program Files/CMake/bin/boost-1_90_0/"
+      - "C:/Program Files/CMake/bin/boost_1_90_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_90_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_90_0/"
+      - "C:/Program Files/CMake/bin/boost-1_90/"
+      - "C:/Program Files/CMake/bin/boost_1_90/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_90/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_90/"
+      - "C:/Program Files/CMake/bin/boost-1_89_0/"
+      - "C:/Program Files/CMake/bin/boost_1_89_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_89_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_89_0/"
+      - "C:/Program Files/CMake/bin/boost-1_89/"
+      - "C:/Program Files/CMake/bin/boost_1_89/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_89/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_89/"
+      - "C:/Program Files/CMake/bin/boost-1_88_0/"
+      - "C:/Program Files/CMake/bin/boost_1_88_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_88_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_88_0/"
+      - "C:/Program Files/CMake/bin/boost-1_88/"
+      - "C:/Program Files/CMake/bin/boost_1_88/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_88/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_88/"
+      - "C:/Program Files/CMake/bin/boost-1_87_0/"
+      - "C:/Program Files/CMake/bin/boost_1_87_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_87_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_87_0/"
+      - "C:/Program Files/CMake/bin/boost-1_87/"
+      - "C:/Program Files/CMake/bin/boost_1_87/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_87/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_87/"
+      - "C:/Program Files/CMake/bin/boost-1_86_0/"
+      - "C:/Program Files/CMake/bin/boost_1_86_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_86_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_86_0/"
+      - "C:/Program Files/CMake/bin/boost-1_86/"
+      - "C:/Program Files/CMake/bin/boost_1_86/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_86/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_86/"
+      - "C:/Program Files/CMake/bin/boost-1_85_0/"
+      - "C:/Program Files/CMake/bin/boost_1_85_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_85_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_85_0/"
+      - "C:/Program Files/CMake/bin/boost-1_85/"
+      - "C:/Program Files/CMake/bin/boost_1_85/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_85/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_85/"
+      - "C:/Program Files/CMake/bin/boost-1_84_0/"
+      - "C:/Program Files/CMake/bin/boost_1_84_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_84_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_84_0/"
+      - "C:/Program Files/CMake/bin/boost-1_84/"
+      - "C:/Program Files/CMake/bin/boost_1_84/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_84/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_84/"
+      - "C:/Program Files/CMake/bin/boost-1_83_0/"
+      - "C:/Program Files/CMake/bin/boost_1_83_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_83_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_83_0/"
+      - "C:/Program Files/CMake/bin/boost-1_83/"
+      - "C:/Program Files/CMake/bin/boost_1_83/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_83/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_83/"
+      - "C:/Program Files/CMake/bin/boost-1_82_0/"
+      - "C:/Program Files/CMake/bin/boost_1_82_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_82_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_82_0/"
+      - "C:/Program Files/CMake/bin/boost-1_82/"
+      - "C:/Program Files/CMake/bin/boost_1_82/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_82/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_82/"
+      - "C:/Program Files/CMake/bin/boost-1_81_0/"
+      - "C:/Program Files/CMake/bin/boost_1_81_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_81_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_81_0/"
+      - "C:/Program Files/CMake/bin/boost-1_81/"
+      - "C:/Program Files/CMake/bin/boost_1_81/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_81/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_81/"
+      - "C:/Program Files/CMake/bin/boost-1_80_0/"
+      - "C:/Program Files/CMake/bin/boost_1_80_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_80_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_80_0/"
+      - "C:/Program Files/CMake/bin/boost-1_80/"
+      - "C:/Program Files/CMake/bin/boost_1_80/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_80/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_80/"
+      - "C:/Program Files/CMake/bin/boost-1_79_0/"
+      - "C:/Program Files/CMake/bin/boost_1_79_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_79_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_79_0/"
+      - "C:/Program Files/CMake/bin/boost-1_79/"
+      - "C:/Program Files/CMake/bin/boost_1_79/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_79/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_79/"
+      - "C:/Program Files/CMake/bin/boost-1_78_0/"
+      - "C:/Program Files/CMake/bin/boost_1_78_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_78_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_78_0/"
+      - "C:/Program Files/CMake/bin/boost-1_78/"
+      - "C:/Program Files/CMake/bin/boost_1_78/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_78/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_78/"
+      - "C:/Program Files/CMake/bin/boost-1_77_0/"
+      - "C:/Program Files/CMake/bin/boost_1_77_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_77_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_77_0/"
+      - "C:/Program Files/CMake/bin/boost-1_77/"
+      - "C:/Program Files/CMake/bin/boost_1_77/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_77/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_77/"
+      - "C:/Program Files/CMake/bin/boost-1_76_0/"
+      - "C:/Program Files/CMake/bin/boost_1_76_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_76_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_76_0/"
+      - "C:/Program Files/CMake/bin/boost-1_76/"
+      - "C:/Program Files/CMake/bin/boost_1_76/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_76/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_76/"
+      - "C:/Program Files/CMake/bin/boost-1_75_0/"
+      - "C:/Program Files/CMake/bin/boost_1_75_0/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_75_0/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_75_0/"
+      - "C:/Program Files/CMake/bin/boost-1_75/"
+      - "C:/Program Files/CMake/bin/boost_1_75/"
+      - "C:/Program Files/CMake/bin/boost/boost-1_75/"
+      - "C:/Program Files/CMake/bin/boost/boost_1_75/"
+      - "C:/Program Files/CMake/bin/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/boost-1_91_0/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/boost_1_91_0/"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/boost/boost-1_91_0/"
@@ -13976,6 +13989,143 @@ events:
       - "C:/Program Files/Go/bin/boost/boost-1_75/boost/config.hpp"
       - "C:/Program Files/Go/bin/boost/boost_1_75/boost/config.hpp"
       - "C:/Program Files/Go/bin/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_91_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_91_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_91_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_91_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_91/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_91/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_91/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_91/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_90_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_90_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_90_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_90_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_90/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_90/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_90/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_90/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_89_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_89_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_89_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_89_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_89/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_89/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_89/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_89/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_88_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_88_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_88_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_88_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_88/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_88/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_88/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_88/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_87_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_87_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_87_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_87_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_87/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_87/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_87/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_87/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_86_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_86_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_86_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_86_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_86/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_86/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_86/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_86/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_85_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_85_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_85_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_85_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_85/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_85/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_85/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_85/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_84_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_84_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_84_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_84_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_84/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_84/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_84/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_84/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_83_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_83_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_83_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_83_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_83/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_83/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_83/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_83/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_82_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_82_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_82_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_82_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_82/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_82/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_82/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_82/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_81_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_81_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_81_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_81_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_81/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_81/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_81/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_81/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_80_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_80_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_80_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_80_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_80/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_80/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_80/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_80/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_79_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_79_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_79_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_79_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_79/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_79/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_79/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_79/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_78_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_78_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_78_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_78_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_78/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_78/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_78/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_78/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_77_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_77_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_77_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_77_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_77/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_77/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_77/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_77/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_76_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_76_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_76_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_76_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_76/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_76/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_76/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_76/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_75_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_75_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_75_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_75_0/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost-1_75/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost_1_75/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost-1_75/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/boost_1_75/boost/config.hpp"
+      - "C:/Program Files/CMake/bin/boost/config.hpp"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/boost-1_91_0/boost/config.hpp"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/boost_1_91_0/boost/config.hpp"
       - "C:/Users/cheta/AppData/Local/Programs/Python/Python312/Scripts/boost/boost-1_91_0/boost/config.hpp"
@@ -16746,6 +16896,7 @@ events:
         - "C:\\wsl-aliases"
         - "C:\\Extra\\terraform_1.15.2_windows_amd64"
         - "C:\\Program Files\\Go\\bin"
+        - "C:\\Program Files\\CMake\\bin"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
         - "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python312\\"
         - "C:\\Users\\cheta\\scoop\\shims"

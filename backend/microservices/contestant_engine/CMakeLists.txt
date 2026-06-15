@@ -86,6 +86,7 @@ if(BUILD_TESTS)
     include(GoogleTest)
 
     add_executable(fix_engine_tests
+        tests/test_tcp_ingress.cpp
         tests/test_fix_message.cpp
         tests/test_fix_session.cpp
         tests/test_message_parser.cpp

@@ -127,8 +127,8 @@ class TestSchemaMapper:
 class TestVMCreatorTemplate:
     """Validate the manifest template used by the VM creator worker."""
 
-    def test_template_renders_three_pod_resources(self):
-        """All three resources in the manifest should be Pods, not Deployments."""
+    def test_template_renders_expected_dns_resources(self):
+        """The rendered manifest should include the headless Service and the shadow/telemetry Pods."""
         template_path = os.path.join(
             os.path.dirname(__file__),
             "..",
@@ -147,11 +147,17 @@ class TestVMCreatorTemplate:
 
         resources = list(yaml.safe_load_all(rendered))
 
-        assert len(resources) == 3
-        assert all(resource["kind"] == "Pod" for resource in resources)
+        assert len(resources) == 4
+        assert [resource["kind"] for resource in resources] == [
+            "Pod",
+            "Pod",
+            "Service",
+            "Pod",
+        ]
         assert [resource["metadata"]["name"] for resource in resources] == [
             "microvm-42",
             "telemetry-42",
+            "submission-42",
             "shadow-42",
         ]
 
@@ -265,7 +271,7 @@ class TestVMCreatorWorker:
         assert context["namespace"] == "tradeforces"
         assert context["contestant_ingress_addr"] == "10.0.0.13"
         assert context["contestant_egress_addr"] == "10.0.0.13"
-        assert context["shadow_egress_addr"] == "shadow-42.tradeforces"
+        assert context["shadow_egress_addr"] == "shadow-42.submission-42.tradeforces.svc.cluster.local"
         assert context["redpanda_brokers"] == worker_module.settings.redpanda_bootstrap_servers
         assert context["redpanda_orders_topic"] == "42"
         assert context["redpanda_results_topic"] == "42"

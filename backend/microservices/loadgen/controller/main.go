@@ -46,6 +46,7 @@ type config struct {
 	RunnerCPULimit      string
 	RunnerMemoryLimit   string
 	PhasesJSON          string
+	ResetTTL            time.Duration
 
 	// NEW: passed through to runner pods
 	RedpandaBrokers  string
@@ -304,6 +305,11 @@ func runQueueLoop(ctx context.Context, cfg config, client kubernetes.Interface, 
 	// pod set until its benchmark completes.
 	sub.ReceiveSettings.MaxOutstandingMessages = 1
 	sub.ReceiveSettings.NumGoroutines = 1
+	if cfg.ResetTTL > 0 {
+		sub.ReceiveSettings.MaxExtension = cfg.ResetTTL
+		sub.ReceiveSettings.MinDurationPerAckExtension = cfg.ResetTTL
+		sub.ReceiveSettings.MaxDurationPerAckExtension = cfg.ResetTTL
+	}
 
 	log.Printf("listening for benchmark jobs project=%s subscription=%s", cfg.GCPProjectID, cfg.PubSubSubscription)
 	return sub.Receive(ctx, func(msgCtx context.Context, msg *pubsub.Message) {
@@ -436,6 +442,9 @@ func processRun(ctx context.Context, cfg config, client kubernetes.Interface, st
 			"delete runner job: %w",
 			err,
 		)
+	}
+	if err := waitForJobPodsDeletion(ctx, client, cfg.Namespace, job.Name); err != nil {
+		return fmt.Errorf("wait for runner job pods to be deleted: %w", err)
 	}
 
 	log.Printf(
@@ -651,6 +660,22 @@ func deleteJobIfExists(ctx context.Context, client kubernetes.Interface, namespa
 	}
 	return err
 }
+func deletePodIfExists(ctx context.Context, client kubernetes.Interface, namespace, name string) error {
+	err := client.CoreV1().Pods(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
+func deleteServiceIfExists(ctx context.Context, client kubernetes.Interface, namespace, name string) error {
+	err := client.CoreV1().Services(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
 func deleteDeploymentIfExists(
 	ctx context.Context,
 	client kubernetes.Interface,
@@ -687,19 +712,10 @@ func waitForPodDeletion(
 	defer ticker.Stop()
 
 	for {
-
-		_, err := client.AppsV1().
-			Deployments(namespace).
-			Get(
-				ctx,
-				podName,
-				metav1.GetOptions{},
-			)
-
+		_, err := client.CoreV1().Pods(namespace).Get(ctx, podName, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			return nil
 		}
-
 		if err != nil {
 			return err
 		}
@@ -707,11 +723,35 @@ func waitForPodDeletion(
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
 		case <-ticker.C:
 		}
 	}
 }
+
+func waitForJobPodsDeletion(ctx context.Context, client kubernetes.Interface, namespace, jobName string) error {
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		pods, err := client.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{LabelSelector: "job-name=" + jobName})
+		if err != nil {
+			return fmt.Errorf("list runner job pods: %w", err)
+		}
+		if len(pods.Items) == 0 {
+			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+		}
+	}
+}
+func submissionServiceName(submissionID string) string {
+	return "submission-" + strings.TrimSpace(submissionID)
+}
+
 func stopBenchmarkPods(
 	ctx context.Context,
 	client kubernetes.Interface,
@@ -726,31 +766,20 @@ func stopBenchmarkPods(
 		queued.TelemetryPod,
 	)
 
-	if err := deleteDeploymentIfExists(
-		ctx,
-		client,
-		namespace,
-		queued.MicroVMPod,
-	); err != nil {
-		return fmt.Errorf(
-			"delete microvm pod: %w",
-			err,
-		)
+	if err := deletePodIfExists(ctx, client, namespace, queued.MicroVMPod); err != nil {
+		return fmt.Errorf("delete microvm pod: %w", err)
 	}
 
-	if err := deleteDeploymentIfExists(
-		ctx,
-		client,
-		namespace,
-		queued.TelemetryPod,
-	); err != nil {
-		return fmt.Errorf(
-			"delete telemetry pod: %w",
-			err,
-		)
+	if err := deletePodIfExists(ctx, client, namespace, queued.TelemetryPod); err != nil {
+		return fmt.Errorf("delete telemetry pod: %w", err)
 	}
-	if err := deleteDeploymentIfExists(ctx, client, namespace, queued.ShadowPod); err != nil {
+
+	if err := deletePodIfExists(ctx, client, namespace, queued.ShadowPod); err != nil {
 		return fmt.Errorf("delete shadow pod: %w", err)
+	}
+
+	if err := deleteServiceIfExists(ctx, client, namespace, submissionServiceName(queued.SubmissionID)); err != nil {
+		return fmt.Errorf("delete submission service: %w", err)
 	}
 
 	if err := waitForPodDeletion(
@@ -817,6 +846,7 @@ func loadConfig() (config, error) {
 		RunnerCPULimit:      getenv("RUNNER_CPU_LIMIT", "1"),
 		RunnerMemoryLimit:   getenv("RUNNER_MEMORY_LIMIT", "768Mi"),
 		PhasesJSON:          getenv("PHASES_JSON", `[{"name":"steady","duration_seconds":20,"active_bots":100,"rps":500}]`),
+		ResetTTL:            getenvDuration("RESET_TTL", 5*time.Second),
 		RedpandaBrokers:     getenv("REDPANDA_BOOTSTRAP_SERVERS", ""),
 		RedpandaUsername:    getenv("REDPANDA_SASL_USERNAME", ""),
 		RedpandaPassword:    getenv("REDPANDA_SASL_PASSWORD", ""),
@@ -899,6 +929,28 @@ func getenv(key, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func getenvDuration(key string, fallback time.Duration) time.Duration {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+
+	parsed, err := time.ParseDuration(value)
+	if err != nil {
+		if seconds, convErr := strconv.Atoi(value); convErr == nil && seconds > 0 {
+			parsed = time.Duration(seconds) * time.Second
+			err = nil
+		}
+	}
+	if err != nil {
+		return fallback
+	}
+	if parsed <= 0 {
+		return fallback
+	}
+	return parsed
 }
 
 func getenvInt(key string, fallback int) int {

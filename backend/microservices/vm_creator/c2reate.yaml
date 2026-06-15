@@ -1,0 +1,62 @@
+
+# Template for telemetry pod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: telemetry-20
+  labels:
+    submission-id: "20"
+    user-id: "1"
+    app: telemetry
+spec:
+  hostname: telemetry-20
+  subdomain: submission-20
+  imagePullSecrets:
+  - name: gar-secret
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 30
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchExpressions:
+          - key: submission-id
+            operator: In
+            values:
+            - "20"
+          - key: app
+            operator: In
+            values:
+            - tradeforces-submission
+  containers:
+  - name: telemetry-container
+    image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1
+    imagePullPolicy: Always
+    command: ["/app/telemetry-bin"]
+    ports:
+      - name: redpanda
+        containerPort: 9092
+        protocol: TCP
+      - name: c-ingress
+        containerPort: 9100
+        protocol: TCP
+      - name: c-egress
+        containerPort: 9101
+        protocol: TCP
+    env:
+    - name: SUBMISSION_ID
+      value: "20"
+    - name: USER_ID
+      value: "1"
+    - name: REDPANDA_ORDERS_TOPIC
+      value: "20"
+    - name: CONTESTANT_INGRESS_ADDR
+      value: "172.20.0.178:9100"
+    - name: CONTESTANT_EGRESS_ADDR
+      value: "172.20.0.178:9101"
+    - name: SHADOW_EGRESS_ADDR
+      value: "172.20.0.179:9100"
+    envFrom:
+    - configMapRef:
+        name: app-env

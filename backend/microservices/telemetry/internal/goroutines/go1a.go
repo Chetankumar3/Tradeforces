@@ -40,7 +40,10 @@ func RunGo1A(client *kgo.Client, cfg *types.Config,
 			logger.Printf("Go1A: no messages yet, will retry")
 		}
 	}
-
+	
+	if debugEnabled {
+		logger.Printf("Go1A: The match arrived. Continuous polling start. Will check stop_chan every 100ms.")
+	}
 	// Phase 2: continuous polling with a short timeout so stop is responsive.
 	for {
 		select {

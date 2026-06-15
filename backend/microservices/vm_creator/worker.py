@@ -9,6 +9,7 @@ from google.cloud import pubsub_v1
 from google.cloud.devtools import cloudbuild_v1
 from google.cloud import storage
 from kubernetes import client, config, watch
+from kubernetes.client import ApiException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 import sys
@@ -133,7 +134,7 @@ spec:
             ),
             options=cloudbuild_v1.BuildOptions(
                 default_logs_bucket_behavior=(
-                    cloudbuild_v1.BuildOptions.DefaultLogsBucketBehavior.   REGIONAL_USER_OWNED_BUCKET
+                    cloudbuild_v1.BuildOptions.DefaultLogsBucketBehavior.REGIONAL_USER_OWNED_BUCKET
                 )
             ),
             source=cloudbuild_v1.Source(
@@ -189,6 +190,26 @@ spec:
         logger.info(f"[CB] submission={submission_id} | build succeeded → {image_uri}")
         return image_uri
     
+    @staticmethod
+    def _find_resource(
+        resources: list[Dict[str, Any]],
+        *,
+        kind: Optional[str] = None,
+        name: Optional[str] = None,
+        name_prefix: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Return the first manifest resource that matches the requested kind/name filter."""
+        for resource in resources:
+            metadata = resource.get("metadata") or {}
+            if kind and str(resource.get("kind", "")).lower() != kind.lower():
+                continue
+            if name and metadata.get("name") != name:
+                continue
+            if name_prefix and not str(metadata.get("name", "")).startswith(name_prefix):
+                continue
+            return resource
+        return None
+
     def _apply_runtime_address_overrides(
         self,
         manifest: Dict[str, Any],
@@ -277,10 +298,40 @@ spec:
         if not resources:
             raise ValueError("No Kubernetes resources were rendered from the template")
 
-        microvm_manifest = resources[0]
+        service_manifest = self._find_resource(
+            resources,
+            kind="Service",
+            name=f"submission-{submission_id}",
+        )
+        if service_manifest is not None:
+            service_manifest = dict(service_manifest)
+            metadata = dict(service_manifest.get("metadata") or {})
+            annotations = dict(metadata.get("annotations") or {})
+            annotations["kubectl.kubernetes.io/last-applied-configuration"] = json.dumps(
+                service_manifest,
+                sort_keys=True,
+            )
+            metadata["annotations"] = annotations
+            service_manifest["metadata"] = metadata
+
+            try:
+                self.k8s_client.create_namespaced_service(
+                    namespace=settings.k3s_namespace,
+                    body=service_manifest,
+                )
+                logger.info("Created headless service %s for submission %s", service_manifest["metadata"]["name"], submission_id)
+            except ApiException as exc:
+                if exc.status != 409:
+                    raise
+                logger.info("Headless service %s already exists for submission %s", service_manifest["metadata"]["name"], submission_id)
+
+        microvm_manifest = self._find_resource(resources, kind="Pod", name_prefix="microvm-")
+        if microvm_manifest is None:
+            raise ValueError("No microVM pod manifest was rendered from the template")
+
         pod = self.k8s_client.create_namespaced_pod(
             namespace=settings.k3s_namespace,
-            body=microvm_manifest
+            body=microvm_manifest,
         )
         logger.info(f"MicroVM pod created: {pod.metadata.name}")
 
@@ -301,7 +352,12 @@ spec:
         if not resources:
             raise ValueError("No Kubernetes resources were rendered from the template")
 
-        microvm_manifest = resources[0]
+        microvm_manifest = self._find_resource(resources, kind="Pod", name_prefix="microvm-")
+        telemetry_manifest = self._find_resource(resources, kind="Pod", name_prefix="telemetry-")
+        shadow_manifest = self._find_resource(resources, kind="Pod", name_prefix="shadow-")
+
+        if microvm_manifest is None:
+            raise ValueError("No microVM pod manifest was rendered from the template")
 
         pod_details = self.k8s_client.read_namespaced_pod(
             name=pod.metadata.name,
@@ -310,9 +366,6 @@ spec:
         node_name = pod_details.spec.node_name or pod_details.status.host_ip
         if not node_name:
             raise RuntimeError("Unable to resolve the node name for the microVM pod")
-
-        telemetry_manifest = resources[1] if len(resources) > 1 else None
-        shadow_manifest = resources[2] if len(resources) > 2 else None
 
         if shadow_manifest is not None:
             kind = shadow_manifest.get("kind", "").lower()
@@ -367,17 +420,13 @@ spec:
             )
             logger.info(f"Created deployment {telemetry_manifest['metadata']['name']} on node {node_name}")
 
-        microvm_name = microvm_manifest.get("metadata", {}).get("name") or f"microvm-{submission_id}"
-        telemetry_name = resources[1].get("metadata", {}).get("name") if len(resources) > 1 else f"telemetry-deployment-{submission_id}"
-        shadow_name = resources[2].get("metadata", {}).get("name") if len(resources) > 2 else f"shadow-deployment-{submission_id}"
-
         return {
             "pod_name": pod.metadata.name,
             "pod_ip": pod_ip,
             "node_name": node_name,
             "microvm_pod_name": pod.metadata.name,
-            "telemetry_pod_name": resources[1]['metadata']['name'] if len(resources) > 1 else None,
-            "shadow_pod_name": resources[2]['metadata']['name'] if len(resources) > 2 else None,
+            "telemetry_pod_name": telemetry_manifest.get("metadata", {}).get("name") if telemetry_manifest else None,
+            "shadow_pod_name": shadow_manifest.get("metadata", {}).get("name") if shadow_manifest else None,
         }
     
     async def _wait_for_pod_running(self, pod_name: str) -> str:
@@ -536,10 +585,7 @@ spec:
         topic_path = self.publisher.topic_path(self.project_id, settings.queue2_name)
         payload = json.dumps(queue2_message).encode("utf-8")
 
-        logger.info(
-            f"[Q2] submission={submission_id} | publishing to {topic_path} | "
-            f"microvm={microvm_pod_name} telemetry={telemetry_pod_name} shadow={shadow_pod_name}"
-        )
+        logger.info(f"[Q2] submission={submission_id} | {queue2_message}")
 
         future = self.publisher.publish(topic_path, payload)
         try:

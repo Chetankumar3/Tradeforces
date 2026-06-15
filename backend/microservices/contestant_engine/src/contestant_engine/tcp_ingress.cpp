@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
+#include <string>
 
 namespace fix_gateway {
 namespace contestant_engine {
@@ -141,7 +142,14 @@ void TcpIngress::acceptLoop() {
                 std::lock_guard<std::mutex> lock(socketMutex_);
                 activeSocket_ = socket;
             }
-            logger->info("Telemetry ingress connection established");
+            boost::system::error_code endpointEc;
+            const auto remoteEndpoint = socket->remote_endpoint(endpointEc);
+            std::string remote = "<unknown>";
+            if (!endpointEc) {
+                remote = remoteEndpoint.address().to_string() + ":" +
+                         std::to_string(remoteEndpoint.port());
+            }
+            logger->info("Contestant ingress connection established from " + remote);
             readLoop(*socket);
             {
                 std::lock_guard<std::mutex> lock(socketMutex_);
@@ -161,6 +169,7 @@ void TcpIngress::readLoop(boost::asio::ip::tcp::socket& socket) {
     std::string receiveBuffer;
     receiveBuffer.reserve(8192);
     char chunk[8192];
+    bool loggedFirstRead = false;
 
     while (running_ && socket.is_open()) {
         boost::system::error_code ec;
@@ -174,6 +183,12 @@ void TcpIngress::readLoop(boost::asio::ip::tcp::socket& socket) {
         }
 
         receiveBuffer.append(chunk, bytesRead);
+        if (!loggedFirstRead) {
+            loggedFirstRead = true;
+            utils::Logger::getInstance().getLogger("main")->info(
+                "Contestant ingress received first TCP bytes: bytes_read=" +
+                std::to_string(bytesRead) + ", buffered=" + std::to_string(receiveBuffer.size()));
+        }
         if (receiveBuffer.size() > kMaxMessageSize &&
             receiveBuffer.find(std::string(1, kSoh) + "10=") == std::string::npos) {
             utils::Logger::getInstance().getLogger("main")->warn(
@@ -281,50 +296,81 @@ void TcpIngress::normalizeIngressMessage(fix_engine::FIXMessage& message) const 
 }
 
 bool TcpIngress::validateIngressMessage(const std::string& rawMessage) const {
-    const std::string begin = "8=FIX.4.2";
-    if (rawMessage.compare(0, begin.size(), begin) != 0 ||
-        rawMessage.size() < begin.size() + 1 ||
-        rawMessage[begin.size()] != kSoh) {
-        return false;
-    }
+    std::string trace = "";
+    bool isValid = false;
 
-    const size_t bodyLengthStart = begin.size() + 1;
-    if (rawMessage.compare(bodyLengthStart, 2, "9=") != 0) {
-        return false;
-    }
-    const size_t secondSoh = rawMessage.find(kSoh, bodyLengthStart);
-    if (secondSoh == std::string::npos) {
-        return false;
-    }
+    do {
+        trace += "0";
+        const std::string begin = "8=FIX.4.2";
+        if (rawMessage.compare(0, begin.size(), begin) != 0 ||
+            rawMessage.size() < begin.size() + 1 ||
+            rawMessage[begin.size()] != kSoh) {
+            break;
+        }
 
-    const std::string bodyLengthText =
-        rawMessage.substr(bodyLengthStart + 2, secondSoh - bodyLengthStart - 2);
-    size_t bodyLength = 0;
-    if (!parseUnsigned(bodyLengthText, bodyLength)) {
-        return false;
-    }
+        trace += " 1";
+        const size_t bodyLengthStart = begin.size() + 1;
+        if (rawMessage.compare(bodyLengthStart, 2, "9=") != 0) {
+            break;
+        }
 
-    const size_t checksumPos = rawMessage.rfind(std::string(1, kSoh) + "10=");
-    if (checksumPos == std::string::npos || checksumPos + 8 != rawMessage.size()) {
-        return false;
-    }
+        trace += " 2";
+        const size_t secondSoh = rawMessage.find(kSoh, bodyLengthStart);
+        if (secondSoh == std::string::npos) {
+            break;
+        }
 
-    const size_t bodyLengthFromFrame = checksumPos - secondSoh;
-    if (bodyLength != bodyLengthFromFrame) {
-        return false;
-    }
+        trace += " 3";
+        const std::string bodyLengthText =
+            rawMessage.substr(bodyLengthStart + 2, secondSoh - bodyLengthStart - 2);
+        size_t bodyLength = 0;
+        if (!parseUnsigned(bodyLengthText, bodyLength)) {
+            break;
+        }
 
-    const std::string checksumText = rawMessage.substr(checksumPos + 4, 3);
-    if (checksumText.find_first_not_of("0123456789") != std::string::npos) {
-        return false;
-    }
+        trace += " 4";
+        const std::string checksumMarker = std::string(1, kSoh) + "10=";
+        const size_t checksumPos = rawMessage.rfind(checksumMarker);
+        if (checksumPos == std::string::npos) {
+            break;
+        }
 
-    unsigned int sum = 0;
-    for (size_t i = 0; i <= checksumPos; ++i) {
-        sum += static_cast<unsigned char>(rawMessage[i]);
-    }
+        trace += " 5";
+        const size_t checksumFieldEnd = rawMessage.find(kSoh, checksumPos + checksumMarker.size());
+        if (checksumFieldEnd == std::string::npos || checksumFieldEnd != rawMessage.size() - 1) {
+            break;
+        }
 
-    return sum % 256 == static_cast<unsigned int>(std::stoi(checksumText));
+        trace += " 6";
+        const size_t bodyLengthFromFrame = checksumPos - secondSoh;
+        if (bodyLength != bodyLengthFromFrame) {
+            break;
+        }
+
+        trace += " 7";
+        const std::string checksumText = rawMessage.substr(checksumPos + 4, 3);
+        if (checksumText.find_first_not_of("0123456789") != std::string::npos) {
+            break;
+        }
+
+        trace += " 8";
+        unsigned int sum = 0;
+        for (size_t i = 0; i <= checksumPos; ++i) {
+            sum += static_cast<unsigned char>(rawMessage[i]);
+        }
+
+        if (sum % 256 != static_cast<unsigned int>(std::stoi(checksumText))) {
+            break;
+        }
+
+        trace += " PASS";
+        isValid = true;
+    } while (false);
+
+    auto logger = utils::Logger::getInstance().getLogger("main");
+    logger->info("[validateIngressMessage] trace: " + trace + " | result: " + (isValid ? "true" : "false"));
+
+    return isValid;
 }
 
 } // namespace contestant_engine

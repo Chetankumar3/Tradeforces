@@ -4,7 +4,8 @@ import os
 from dataclasses import dataclass
 from typing import Any, AsyncIterator
 
-from fastapi import FastAPI, Request
+from fastapi import APIRouter, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from redis.asyncio import Redis
 
@@ -34,7 +35,17 @@ class LeaderboardRow:
         }
 
 
+router = APIRouter(prefix="/dashpusher")
 app = FastAPI(title=APP_NAME)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 redis_client = Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
 
 
@@ -48,10 +59,14 @@ def _score_to_float(value: Any) -> float:
 
 
 async def fetch_leaderboard() -> list[LeaderboardRow]:
-    if LEADERBOARD_LIMIT > 0:
-        members = await redis_client.zrevrange(REDIS_KEY, 0, LEADERBOARD_LIMIT - 1, withscores=True)
-    else:
-        members = await redis_client.zrevrange(REDIS_KEY, 0, -1, withscores=True)
+    try:
+        if LEADERBOARD_LIMIT > 0:
+            members = await redis_client.zrevrange(REDIS_KEY, 0, LEADERBOARD_LIMIT - 1, withscores=True)
+        else:
+            members = await redis_client.zrevrange(REDIS_KEY, 0, -1, withscores=True)
+    except Exception as exc:
+        print(f"Redis leaderboard query failed: {exc}")
+        return []
 
     leaderboard: list[LeaderboardRow] = []
     for index, (team_id, score) in enumerate(members, start=1):
@@ -81,7 +96,7 @@ def sse_event(event: str, data: str, event_id: str | None = None) -> str:
     for line in data.splitlines() or [""]:
         lines.append(f"data: {line}")
     lines.append("")
-    return "\n".join(lines)
+    return "\n".join(lines) + "\n\n"
 
 
 async def leaderboard_stream() -> AsyncIterator[str]:
@@ -101,12 +116,12 @@ async def leaderboard_stream() -> AsyncIterator[str]:
         await asyncio.sleep(POLL_INTERVAL_SECONDS)
 
 
-@app.get("/healthz", response_class=PlainTextResponse)
+@router.get("/healthz", response_class=PlainTextResponse)
 async def healthz() -> str:
     return "ok"
 
 
-@app.get("/leaderboard")
+@router.get("/leaderboard")
 async def stream_leaderboard(_: Request) -> StreamingResponse:
     headers = {
         "Cache-Control": "no-cache",
@@ -114,3 +129,6 @@ async def stream_leaderboard(_: Request) -> StreamingResponse:
         "X-Accel-Buffering": "no",
     }
     return StreamingResponse(leaderboard_stream(), media_type="text/event-stream", headers=headers)
+
+
+app.include_router(router)

@@ -18,37 +18,42 @@ import (
 // Go4 and the correctness % from Go3 (both synchronous via embedded response
 // channels), computes the weighted composite score, and publishes a JSON record
 // to the Redpanda results topic keyed by SUBMISSION_ID.
-func RunGo6(rdb *redis.Client, cfg *types.Config, schemaFields map[string]string,
+func RunGo6(
+	rdb *redis.Client, 
+	cfg *types.Config, 
+	schemaFields map[string]string,
 	scoreReqCh chan<- types.ScoreRequest,
 	correctnessReqCh chan<- types.CorrectnessRequest,
-	logger *log.Logger) {
-
+	logger *log.Logger,
+) {
 	ticker := time.NewTicker(time.Duration(cfg.ScorerIntervalSec) * time.Second)
 	defer ticker.Stop()
 
-	publishCount := 0 // number of publishes so far; drives the time_lapse field
+	publishCount := 0
 
 	for {
 		<-ticker.C
 
-		// Pull the snapshot from Go4 (synchronous: send request, block on response).
+		// 1. Pull Snapshot (Go4)
 		snapRespCh := make(chan types.ScoreSnapshot, 1)
 		scoreReqCh <- types.ScoreRequest{RespCh: snapRespCh}
 		snap := <-snapRespCh
 
-		// Pull correctness from Go3 (same embedded-channel pattern).
+		// 2. Pull Correctness (Go3)
 		corrRespCh := make(chan float64, 1)
 		correctnessReqCh <- types.CorrectnessRequest{RespCh: corrRespCh}
 		C := <-corrRespCh
 
+		// 3. Compute Math
 		score := computeScore(snap, C, cfg)
-
-		// Time lapse = (publishes so far) * window size. First publish 0s, then
-		// one scorer interval per subsequent publish: 0, interval, 2*interval, ...
 		timelapse := publishCount * cfg.ScorerIntervalSec
 
-		// Build score JSON
+		// 4. Build JSON Payload
 		scoreData := map[string]interface{}{
+			"team_id":            cfg.SubmissionID, 
+			"submission_id":      cfg.SubmissionID,
+			"composite_score":    score,
+			"correctness_pct":    C,
 			"ack_p50_ns":         snap.ACK_P50,
 			"ack_p90_ns":         snap.ACK_P90,
 			"ack_p99_ns":         snap.ACK_P99,
@@ -56,31 +61,41 @@ func RunGo6(rdb *redis.Client, cfg *types.Config, schemaFields map[string]string
 			"exec_p90_ns":        snap.EXEC_P90,
 			"exec_p99_ns":        snap.EXEC_P99,
 			"max_throughput_rps": snap.MaxThroughput,
-			"correctness_pct":    C,
-			"combined_score":     score,
 			"time_lapse_sec":     timelapse,
 		}
 
-		jsonPayload, _ := json.Marshal(scoreData)
+		jsonPayload, err := json.Marshal(scoreData)
+		if err != nil {
+			logger.Printf("[ERROR] Failed to marshal score JSON: %v", err)
+			continue
+		}
 
-		// Push to Redis sorted set
-		rdb.ZAdd(context.Background(), "leaderboard:composite", redis.Z{
+		// 5. Redis Publish (Strict 2-Second Timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+		redisKey := "leaderboard:composite"
+		identifier := cfg.SubmissionID 
+
+		// Push score to sorted set
+		if err := rdb.ZAdd(ctx, redisKey, redis.Z{
 			Score:  score,
-			Member: cfg.SubmissionID,
-		})
+			Member: identifier,
+		}).Err(); err != nil {
+			logger.Printf("[ERROR] Redis ZADD failed for %s: %v", identifier, err)
+		} else {
+			logger.Printf("[INFO] Pushed Score to Redis: %.2f | Submission: %s", score, identifier)
+		}
 
-		// Optionally store full record
-		rdb.Set(context.Background(), fmt.Sprintf("score:%s", cfg.SubmissionID), string(jsonPayload), 0)
+		// Store full metadata payload
+		setKey := fmt.Sprintf("score:%s", identifier)
+		if err := rdb.Set(ctx, setKey, string(jsonPayload), 0).Err(); err != nil {
+			logger.Printf("[ERROR] Redis SET failed for %s: %v", setKey, err)
+		}
+		
+		cancel() // Free resources immediately
 
 		publishCount++
-
-		if debugEnabled {
-			logger.Printf("Go6: published score=%.4f correctness=%.2f%% ack_p99=%dns timelapse=%ds",
-				score, C, snap.ACK_P99, timelapse)
-		}
 	}
-}
-
 // computeScore applies the weighted composite formula:
 //
 //	(C/100)^x * [ W1*(B50/L50) + W2*(B90/L90) + W3*(B99/L99) + W4*(T/BT) ]

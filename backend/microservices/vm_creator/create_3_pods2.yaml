@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "microvm-18"
+  name: "microvm-20"
   namespace: "default"
   labels:
-    submission-id: "18"
-    user-id: "user-18"
+    submission-id: "20"
+    user-id: "1"
     app: tradeforces-submission
 spec:
-  hostname: microvm-18
-  subdomain: submission-18
+  hostname: microvm-20
+  subdomain: submission-20
   imagePullSecrets:
   - name: gar-secret
   runtimeClassName: kata-qemu
@@ -26,7 +26,7 @@ spec:
             - key: submission-id
               operator: In
               values:
-              - "18"
+              - "20"
             - key: app
               operator: In
               values:
@@ -46,7 +46,7 @@ spec:
 
   containers:
   - name: trader
-    image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-contestant:1.1
+    image: "us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-contestant:1.1"
     imagePullPolicy: Always
     
     ports:
@@ -73,9 +73,9 @@ spec:
             
     env:
     - name: SUBMISSION_ID
-      value: "18"
+      value: "20"
     - name: USER_ID
-      value: "user-18"
+      value: "1"
     - name: POD_NAMESPACE
       valueFrom:
         fieldRef:
@@ -91,77 +91,14 @@ spec:
   
 
 ---
-# Template for telemetry pod
-apiVersion: v1
-kind: Pod
-metadata:
-  name: telemetry-18
-  labels:
-    submission-id: "18"
-    user-id: "user-18"
-    app: telemetry
-spec:
-  hostname: telemetry-18
-  subdomain: submission-18
-  imagePullSecrets:
-  - name: gar-secret
-  restartPolicy: Never
-  terminationGracePeriodSeconds: 30
-  affinity:
-    podAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-      - topologyKey: kubernetes.io/hostname
-        labelSelector:
-          matchExpressions:
-          - key: submission-id
-            operator: In
-            values:
-            - "18"
-          - key: app
-            operator: In
-            values:
-            - tradeforces-submission
-  containers:
-  - name: telemetry-container
-    image: us-central1-docker.pkg.dev/project-cdd074dc-6291-4d7f-a2a/tradeforces/tradeforces-telemetry:1.1
-    imagePullPolicy: Always
-    command: ["/app/telemetry-bin"]
-    ports:
-      - name: redpanda
-        containerPort: 9092
-        protocol: TCP
-      - name: c-ingress
-        containerPort: 9100
-        protocol: TCP
-      - name: c-egress
-        containerPort: 9101
-        protocol: TCP
-    env:
-    - name: SUBMISSION_ID
-      value: "18"
-    - name: USER_ID
-      value: "user-18"
-    - name: REDPANDA_ORDERS_TOPIC
-      value: "18"
-    - name: CONTESTANT_INGRESS_ADDR
-      value: "microvm-18.submission-18.default.svc.cluster.local:9100"
-    - name: CONTESTANT_EGRESS_ADDR
-      value: "microvm-18.submission-18.default.svc.cluster.local:9101"
-    - name: SHADOW_EGRESS_ADDR
-      value: "shadow-18.submission-18.default.svc.cluster.local:9100"
-    envFrom:
-    - configMapRef:
-        name: app-env
-
----
 apiVersion: v1
 kind: Service
 metadata:
-  name: submission-18
+  name: submission-20
 spec:
   clusterIP: None
   selector:
-    submission-id: "18"
+    submission-id: "20"
   ports:
   - name: ingress
     port: 9100
@@ -170,20 +107,19 @@ spec:
     port: 9101
     targetPort: 9101
 
-
 ---
 # Template for shadow_engine pod
 apiVersion: v1
 kind: Pod
 metadata:
-  name: shadow-18
+  name: shadow-20
   labels:
-    submission-id: "18"
-    user-id: "user-18"
+    submission-id: "20"
+    user-id: "1"
     app: shadow
 spec:
-  hostname: shadow-18
-  subdomain: submission-18
+  hostname: shadow-20
+  subdomain: submission-20
   imagePullSecrets:
   - name: gar-secret
   restartPolicy: Never
@@ -197,7 +133,7 @@ spec:
           - key: submission-id
             operator: In
             values:
-            - "18"
+            - "20"
           - key: app
             operator: In
             values:
@@ -218,9 +154,9 @@ spec:
       containerPort: 9100
     env:
     - name: SUBMISSION_ID
-      value: "18"
+      value: "20"
     - name: REDPANDA_ORDERS_TOPIC
-      value: "18"
+      value: "20"
     envFrom:
     - configMapRef:
         name: app-env

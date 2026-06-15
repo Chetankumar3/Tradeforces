@@ -42,6 +42,7 @@ func RunGo1B(fd uintptr, ingressConn net.Conn,
 		if err := writeAll(fd, msg.RawBytes, &blockageCount, permanentStop, logger); err != nil {
 			return // stop_chan already closed inside writeAll
 		}
+		runtime.KeepAlive(ingressConn)
 
 		tIngress := time.Now().UnixNano() // IMMEDIATELY after write -- no code between write and here
 

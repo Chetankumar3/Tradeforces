@@ -84,6 +84,18 @@ func main() {
 	scoreRequestChan := make(chan types.ScoreRequest, 1)
 	correctnessRequestChan := make(chan types.CorrectnessRequest, 1)
 
+	rdb := redis.NewClient(&redis.Options{
+	    Addr:     os.Getenv("REDIS_HOST"),
+	    Password: "",                      
+	    DB:       0,                      
+	})
+	defer rdb.Close()
+
+	// Fast fail if Redis is unreachable on boot
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
+	    panic("Redis connection failed on boot: " + err.Error())
+	}
+
 	// 10. Launch all goroutines.
 	go goroutines.RunGo1A(client, cfg, memoryQueueChan, stopChan, logGo1A)
 	go goroutines.RunGo1B(ingressFD, ingressConn, memoryQueueChan, ingressChan, stopChan, logGo1B)
@@ -92,7 +104,7 @@ func main() {
 	go goroutines.RunGo4(ingressChan, egressChan, scoreRequestChan, logGo4)
 	go goroutines.RunGo3(go3CorrectnessChan, shadowEgressChan, correctnessRequestChan, logGo3)
 	go goroutines.RunGo6(client, cfg, schemaFields, scoreRequestChan, correctnessRequestChan, logGo6)
-
+	go goroutines.RunGo6(rdb, cfg, schemaFields, scoreRequestChan, correctnessRequestChan, logGo6)
 	// 11. Block main forever. Pod deletion handles cleanup.
 	select {}
 }

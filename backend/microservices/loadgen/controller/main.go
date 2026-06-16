@@ -386,7 +386,7 @@ func processRun(ctx context.Context, cfg config, client kubernetes.Interface, st
 	log.Printf("created runner job name=%s run_id=%s", job.Name, queued.RunID)
 
 	if err := waitForAllRunnersReady(ctx, cfg, client, state, job.Name); err != nil {
-		_ = deleteJobIfExists(ctx, client, cfg.Namespace, job.Name)
+		// _ = deleteJobIfExists(ctx, client, cfg.Namespace, job.Name)
 		state.markStatus("invalid")
 		return err
 	}

@@ -10,26 +10,33 @@ import (
 	"github.com/iicpc/telemetry/internal/types"
 )
 
-// normalize canonicalizes a FIX exec report for cross-engine comparison. It
-// strips framing + engine-assigned tags {8, 9, 10, 17, 37} (which legitimately
-// differ between contestant and shadow), sorts the remaining "tag=value" tokens
-// alphabetically, and joins them with SOH. Two reports are equal iff their
-// normalized strings are identical.
+// normalize canonicalizes a FIX exec report for cross-engine comparison.
+//
+// Tag 11 (ClOrdID) is KEPT: it's stable across engines (same order replayed to
+// both contestant and shadow), so it's the implicit join key -- two reports
+// only match if they belong to the same order AND have matching content.
+//
+// Everything assigned independently per engine (framing, per-report ids, the
+// trade-grouping id, sequence numbers, comp ids, wall-clock timestamps) is
+// stripped, since those legitimately differ between contestant and shadow
+// even for an identical logical fill.
 func normalize(msg []byte) string {
-	// Strip FIX framing plus identity fields that are not stable across
-	// contestant/shadow runs (e.g. ClOrdID / OrigClOrdID / engine-generated IDs).
 	excluded := map[string]bool{
-		"8":  true,
-		"9":  true,
-		"10": true,
-		"11": true,
-		"17": true,
-		"37": true,
-		"41": true,
+		"8":   true, // BeginString (framing)
+		"9":   true, // BodyLength (framing)
+		"10":  true, // CheckSum (framing)
+		"17":  true, // ExecID - unique per report, per engine
+		"34":  true, // MsgSeqNum - per-connection sequence
+		"37":  true, // OrderID - engine-assigned
+		"41":  true, // OrigClOrdID - engine/session bookkeeping
+		"49":  true, // SenderCompID - differs per engine/connection
+		"52":  true, // SendingTime - wall clock, differs per engine
+		"56":  true, // TargetCompID - differs per engine/connection
+		"60":  true, // TransactTime - wall clock, differs per engine
+		"880": true, // TrdMatchID - Go4's internal grouping id, not a correctness field
 	}
 	parts := []string{}
 
-	// Scan msg, splitting on SOH, and process each "tag=value" token.
 	for _, token := range bytes.Split(msg, []byte{0x01}) {
 		if len(token) == 0 {
 			continue
@@ -47,18 +54,18 @@ func normalize(msg []byte) string {
 	return strings.Join(parts, "\x01")
 }
 
-// RunGo3 is the Correctness Worker. It is the ONLY goroutine that touches
-// shadowPending, contestantPending, and the correctness counters. It receives
-// exec reports from Go2 (contestant) and Go7 (shadow), normalizes each, and
-// performs bidirectional matching. Correctness % is matched/totalShadow * 100.
+// RunGo3 is the Correctness Worker, the only goroutine touching shadowPending,
+// contestantPending, and the counters. It receives reports from Go2
+// (contestant) and Go7 (shadow), normalizes each -- now keyed implicitly by
+// ClOrdID via normalize() -- and performs bidirectional matching.
 func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 	correctnessReqCh <-chan types.CorrectnessRequest,
 	logger *log.Logger) {
 
-	shadowPending := make(map[string]struct{})     // normalized shadow report fingerprints
-	contestantPending := make(map[string]struct{}) // normalized contestant report fingerprints
-	totalShadowReports := 0                        // denominator: total exec reports from shadow
-	matchedReports := 0                            // numerator: reports that matched
+	shadowPending := make(map[string]struct{})
+	contestantPending := make(map[string]struct{})
+	totalShadowReports := 0
+	matchedReports := 0
 
 	for {
 		select {
@@ -67,7 +74,6 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 			clOrdID := string(fix.ParseTag(msg, fix.PfxClOrdID))
 			norm := normalize(msg)
 			totalShadowReports++
-			// Did the contestant already send a matching normalized report?
 			if _, found := contestantPending[norm]; found {
 				delete(contestantPending, norm)
 				matchedReports++
@@ -77,7 +83,6 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 				}
 				continue
 			}
-			// Contestant has not sent this report yet; store in shadowPending.
 			shadowPending[norm] = struct{}{}
 			if debugEnabled {
 				logger.Printf("Go3: shadow stored ord_id=%s total_shadow=%d",
@@ -87,7 +92,6 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 		case msg := <-go3Ch:
 			clOrdID := string(fix.ParseTag(msg, fix.PfxClOrdID))
 			norm := normalize(msg)
-			// Did the shadow already send a matching normalized report?
 			if _, found := shadowPending[norm]; found {
 				delete(shadowPending, norm)
 				matchedReports++
@@ -97,7 +101,6 @@ func RunGo3(go3Ch <-chan []byte, shadowCh <-chan []byte,
 				}
 				continue
 			}
-			// Shadow has not sent this report yet; store in contestantPending.
 			contestantPending[norm] = struct{}{}
 			if debugEnabled {
 				logger.Printf("Go3: contestant stored, no shadow yet ord_id=%s", clOrdID)

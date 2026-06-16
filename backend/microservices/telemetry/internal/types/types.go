@@ -16,10 +16,10 @@ type IngressEvent struct {
 
 // EgressEvent is sent from Go2 to Go4 after reading an exec report from the contestant.
 type EgressEvent struct {
-	OrdID     string
-	ExecID    int   // Tag 17 value
-	Aggressor bool  // true if Tag 1057 == 'Y'
-	ArrTime   int64 // time.Now().UnixNano() captured immediately after ReadFIXMessage
+	OrdID     string // Tag 11 ClOrdID of this report's own order
+	MatchID   int    // Tag 880 TrdMatchID - groups an aggressor's fill with the resting fills it cleared
+	Aggressor bool   // true if Tag 1057 == 'Y'
+	ArrTime   int64  // time.Now().UnixNano() captured immediately after ReadFIXMessage
 }
 
 // ScoreRequest is sent by Go6 to Go4. It embeds a buffered response channel so

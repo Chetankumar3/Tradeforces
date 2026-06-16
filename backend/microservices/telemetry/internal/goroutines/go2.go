@@ -10,16 +10,12 @@ import (
 	"github.com/iicpc/telemetry/internal/types"
 )
 
-// RunGo2 is the Egress TCP Reader for the contestant engine. It reads FIX exec
-// reports over a persistent connection via a bufio.Reader (Go netpoller parks
-// the goroutine until data arrives), timestamps arrival immediately, parses the
-// key fields, then forwards to Go4 (latency path) and Go3 (correctness path).
 func RunGo2(conn net.Conn, egressCh chan<- types.EgressEvent,
 	go3Ch chan<- []byte, stopChan <-chan struct{},
 	logger *log.Logger) {
 
-	br := bufio.NewReaderSize(conn, 65536) // one reader reused for all messages
-	var scratch [4096]byte                 // one stack buffer reused for all messages
+	br := bufio.NewReaderSize(conn, 65536)
+	var scratch [4096]byte
 
 	for {
 		n, err := fix.ReadFIXMessage(br, scratch[:])
@@ -30,29 +26,25 @@ func RunGo2(conn net.Conn, egressCh chan<- types.EgressEvent,
 			return
 		}
 
-		arrTime := time.Now().UnixNano() // IMMEDIATELY after read -- no code between read and here
+		arrTime := time.Now().UnixNano()
 
-		msg := scratch[:n] // slice into stack buffer; valid until next ReadFIXMessage call
+		msg := scratch[:n]
 
-		// Parse key fields - all zero-alloc slices into msg.
 		ordID := string(fix.ParseTag(msg, fix.PfxClOrdID))
-		execID := fix.Atoi(fix.ParseTag(msg, fix.PfxExecID))
+		matchID := fix.Atoi(fix.ParseTag(msg, fix.PfxTrdMatchID))
 		aggrVal := fix.ParseTag(msg, fix.PfxAggressor)
 		aggressor := len(aggrVal) > 0 && aggrVal[0] == 'Y'
 
-		// Push to the latency path FIRST to minimize the timestamp delta.
 		select {
-		case egressCh <- types.EgressEvent{OrdID: ordID, ExecID: execID,
+		case egressCh <- types.EgressEvent{OrdID: ordID, MatchID: matchID,
 			Aggressor: aggressor, ArrTime: arrTime}:
 		case <-stopChan:
 			return
 		}
 
-		// Copy for Go3 (one alloc per message; Go3 is not latency-critical).
 		copyBuf := make([]byte, n)
 		copy(copyBuf, scratch[:n])
 
-		// Non-blocking: drop if Go3 is behind rather than stalling Go2.
 		select {
 		case go3Ch <- copyBuf:
 		default:
@@ -62,8 +54,8 @@ func RunGo2(conn net.Conn, egressCh chan<- types.EgressEvent,
 		}
 
 		if debugEnabled {
-			logger.Printf("Go2: exec report ord_id=%s exec_id=%d aggressor=%v t=%d",
-				ordID, execID, aggressor, arrTime)
+			logger.Printf("Go2: exec report ord_id=%s match_id=%d aggressor=%v t=%d",
+				ordID, matchID, aggressor, arrTime)
 		}
 	}
 }

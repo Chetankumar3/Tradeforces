@@ -8,17 +8,23 @@ import (
 	"io"
 )
 
-// Package-level tag prefix byte slices. Never modified.
-// The leading \x01 (SOH) enforces field-boundary matching, preventing e.g.
-// "111=" from matching a search for "11=". All tags in egress messages are
-// preceded by SOH since they appear after earlier fields.
 var (
-	PfxClOrdID   = []byte("\x0111=")
-	PfxExecID    = []byte("\x01880=")
+	// Tag 11 - ClOrdID. STABLE across engines: the same order is replayed to
+	// both contestant and shadow with the same ClOrdID. Go3 uses this to
+	// correlate which contestant report corresponds to which shadow report.
+	PfxClOrdID = []byte("\x0111=")
+
+	// Tag 880 - TrdMatchID. Engine-internal trade-grouping id: shared by an
+	// aggressor's exec report and every resting order it cleared. NOT stable
+	// across engines (each assigns its own). Used ONLY by Go4 to compute
+	// exec_latency = T_egress(resting fill) - T_ingress(aggressor). Go3 must
+	// exclude it from correctness comparison.
+	PfxTrdMatchID = []byte("\x01880=")
+
+	// Tag 1057 (custom) - aggressor-side indicator, 'Y'/'N'.
 	PfxAggressor = []byte("\x011057=")
 )
 
-// ParseTag returns the value bytes for a tag as a slice into msg. ZERO allocs.
 func ParseTag(msg []byte, soHPrefixedTagEq []byte) []byte {
 	idx := bytes.Index(msg, soHPrefixedTagEq)
 	if idx == -1 {
@@ -32,7 +38,6 @@ func ParseTag(msg []byte, soHPrefixedTagEq []byte) []byte {
 	return msg[start : start+end]
 }
 
-// Atoi converts ASCII decimal bytes to int. ZERO allocs.
 func Atoi(b []byte) int {
 	n := 0
 	for _, c := range b {
@@ -41,7 +46,6 @@ func Atoi(b []byte) int {
 	return n
 }
 
-// ParseBodyLen finds "9=" in the header bytes and returns the integer value.
 func ParseBodyLen(header []byte) int {
 	prefix := []byte("9=")
 	idx := bytes.Index(header, prefix)
@@ -56,17 +60,9 @@ func ParseBodyLen(header []byte) int {
 	return Atoi(header[start : start+end])
 }
 
-// ReadFIXMessage reads one complete FIX message into scratch. ZERO allocs.
-// scratch is caller-owned and must be >= 4096 bytes. Returns bytes written.
-//
-// Phase 1: read byte-by-byte until two SOHs are seen.
-//          After this, scratch[0:pos] = "8=FIX.4.2\x01 9=NNN\x01".
-// Phase 2: parse bodyLen from scratch, then io.ReadFull exactly bodyLen more
-//          bytes. Those bytes contain tag 35 through "10=XXX\x01".
 func ReadFIXMessage(br *bufio.Reader, scratch []byte) (int, error) {
 	pos := 0
 	sohCount := 0
-	// Phase 1: scan the header until both SOHs (after 8=... and after 9=...) seen.
 	for sohCount < 2 {
 		b, err := br.ReadByte()
 		if err != nil {
@@ -78,7 +74,6 @@ func ReadFIXMessage(br *bufio.Reader, scratch []byte) (int, error) {
 			sohCount++
 		}
 	}
-	// Phase 2: read exactly bodyLen bytes (tag 35 through the trailing checksum SOH).
 	bodyLen := ParseBodyLen(scratch[:pos])
 	if bodyLen <= 0 {
 		return 0, errors.New("fix: invalid bodyLen")

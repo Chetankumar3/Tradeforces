@@ -1,14 +1,14 @@
 {
   "submission_id":       "submission_id",
   "user_id":             "user_id",
-  "ack_p50_ns":         "ack_p50_ns",
-  "ack_p90_ns":         "ack_p90_ns",
-  "ack_p99_ns":         "ack_p99_ns",
-  "exec_p50_ns":        "exec_p50_ns",
-  "exec_p90_ns":        "exec_p90_ns",
-  "exec_p99_ns":        "exec_p99_ns",
-  "max_throughput_rps": "max_throughput_rps",
-  "correctness_score":    "correctness_pct",
-  "composite_score":     "combined_score",
-  "time_lapse_sec":    "time_lapse_sec"
+  "ack_p50_ns":          "ack_p50_ns",
+  "ack_p90_ns":          "ack_p90_ns",
+  "ack_p99_ns":          "ack_p99_ns",
+  "exec_p50_ns":         "exec_p50_ns",
+  "exec_p90_ns":         "exec_p90_ns",
+  "exec_p99_ns":         "exec_p99_ns",
+  "max_throughput_rps":  "max_throughput_rps",
+  "correctness_pct":     "correctness_score",
+  "combined_score":      "composite_score",
+  "time_lapse_sec":      "time_lapse_sec"
 }

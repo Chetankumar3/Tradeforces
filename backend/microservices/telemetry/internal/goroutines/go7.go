@@ -32,7 +32,7 @@ func RunGo7(conn net.Conn, shadowCh chan<- []byte, logger *log.Logger) {
 
 		if debugEnabled {
 			ordID := string(fix.ParseTag(scratch[:n], fix.PfxClOrdID))
-			logger.Printf("Go7: shadow exec report ord_id=%s", ordID)
+			logger.Printf("Go7: shadow exec report ord_id=%s; report=%s", ordID, scratch[:n])
 		}
 	}
 }

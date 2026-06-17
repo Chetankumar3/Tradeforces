@@ -19,6 +19,9 @@ import (
 //
 // ingressConn is passed (and held) only to keep the connection alive so the GC
 // cannot finalize it and invalidate the raw fd.
+
+var total_out_messages = int64(0)
+
 func RunGo1B(fd uintptr, ingressConn net.Conn,
 	memoryCh <-chan types.OrderMessage, ingressCh chan<- types.IngressEvent,
 	stopChan chan struct{}, logger *log.Logger) {
@@ -53,7 +56,8 @@ func RunGo1B(fd uintptr, ingressConn net.Conn,
 		}
 
 		if debugEnabled {
-			logger.Printf("Go1B: sent ord_id=%s t=%d", msg.OrdID, tIngress)
+			total_out_messages++
+			logger.Printf("Go1B: sent ord_id=%s total messages sent till now=%d", msg.OrdID, total_out_messages)
 		}
 	}
 }

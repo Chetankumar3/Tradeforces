@@ -78,6 +78,9 @@ func (s *go4State) handleIngress(ordID string, tIngress int64, logger *log.Logge
 	}
 	s.DS15Throughput[sec]++
 	if s.DS15Throughput[sec] > s.DS16MaxThroughput {
+		if debugEnabled {
+			logger.Printf("Go4: new peak throughput %d rps at sec=%d", s.DS15Throughput[sec], sec)
+		}
 		s.DS16MaxThroughput = s.DS15Throughput[sec]
 	}
 

@@ -54,8 +54,7 @@ func RunGo2(conn net.Conn, egressCh chan<- types.EgressEvent,
 		}
 
 		if debugEnabled {
-			logger.Printf("Go2: exec report ord_id=%s match_id=%d aggressor=%v t=%d",
-				ordID, matchID, aggressor, arrTime)
+			logger.Printf("Go2: exec report ord_id=%s; report=%s", ordID, msg)
 		}
 	}
 }

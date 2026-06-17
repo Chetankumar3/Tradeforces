@@ -103,6 +103,8 @@ type runState struct {
 	status          string
 }
 
+var debugEnabled bool
+
 func main() {
 	cfg, err := loadConfig()
 	if err != nil {
@@ -653,6 +655,10 @@ func checkSchedulableCapacity(ctx context.Context, cfg config, client kubernetes
 }
 
 func deleteJobIfExists(ctx context.Context, client kubernetes.Interface, namespace, name string) error {
+	if debugEnabled {
+		log.Printf("DEBUG_MODE enabled, skipping deletion of job %s", name)
+		return nil
+	}
 	propagation := metav1.DeletePropagationBackground
 	err := client.BatchV1().Jobs(namespace).Delete(ctx, name, metav1.DeleteOptions{PropagationPolicy: &propagation})
 	if apierrors.IsNotFound(err) {
@@ -661,6 +667,10 @@ func deleteJobIfExists(ctx context.Context, client kubernetes.Interface, namespa
 	return err
 }
 func deletePodIfExists(ctx context.Context, client kubernetes.Interface, namespace, name string) error {
+	if debugEnabled {
+		log.Printf("DEBUG_MODE enabled, skipping deletion of pod %s", name)
+		return nil
+	}
 	err := client.CoreV1().Pods(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if apierrors.IsNotFound(err) {
 		return nil
@@ -851,6 +861,10 @@ func loadConfig() (config, error) {
 		RedpandaUsername:    getenv("REDPANDA_SASL_USERNAME", ""),
 		RedpandaPassword:    getenv("REDPANDA_SASL_PASSWORD", ""),
 	}
+
+	debugEnabled = getenv("DEBUG_MODE", "false") == "TRUE"
+	fmt.Printf("DEBUG_MODE=%t", debugEnabled)
+
 	if cfg.RedpandaBrokers == "" {
 		return cfg, errors.New("REDPANDA_BOOTSTRAP_SERVERS is required")
 	}

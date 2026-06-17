@@ -21,6 +21,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
+	"gopkg.in/natefinch/lumberjack.v2"
+
 )
 
 // schemaPath is the hardcoded container path for the output-field schema.
@@ -111,13 +113,18 @@ func main() {
 	select {}
 }
 
-// newLogger opens (create/append) a log file and wraps it in a *log.Logger.
 func newLogger(path string) *log.Logger {
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return log.New(f, "", log.LstdFlags|log.Lmicroseconds)
+	return log.New(
+		&lumberjack.Logger{
+			Filename:   path,
+			MaxSize:    50, // MB
+			MaxBackups: 10,  // keep last 10 rotated files
+			MaxAge:     10,  // days
+			Compress:   false,
+		},
+		"",
+		log.LstdFlags|log.Lmicroseconds,
+	)
 }
 
 // dialTCP dials a TCP address and asserts to *net.TCPConn (needed for SyscallConn).

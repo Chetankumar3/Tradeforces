@@ -15,4 +15,5 @@ require (
 	github.com/twmb/franz-go/pkg/kmsg v1.8.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )

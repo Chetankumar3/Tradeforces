@@ -10,6 +10,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
+var total_messages_in = int64(0)
 // RunGo1A is the Ingress Consumer. It consumes pre-serialized FIX 4.2 orders
 // from Redpanda, parses OrdID (Tag 11), copies the raw bytes, and pushes an
 // OrderMessage onto memoryCh for Go1B to write to the contestant engine.
@@ -42,7 +43,7 @@ func RunGo1A(client *kgo.Client, cfg *types.Config,
 	}
 	
 	if debugEnabled {
-		logger.Printf("Go1A: The match arrived. Continuous polling start. Will check stop_chan every 100ms.")
+		logger.Printf("Go1A: The first order arrived. Continuous polling start. Will check stop_chan every 100ms.")
 	}
 	// Phase 2: continuous polling with a short timeout so stop is responsive.
 	for {
@@ -83,7 +84,8 @@ func drainToChannel(fetches kgo.Fetches, memoryCh chan<- types.OrderMessage,
 			return
 		}
 		if debugEnabled {
-			logger.Printf("Go1A: queued ord_id=%s bytes=%d", ordID, len(raw))
+			total_messages_in++
+			logger.Printf("Go1A: queued ord_id=%s total messages till now=%d", ordID, total_messages_in)
 		}
 	}
 }

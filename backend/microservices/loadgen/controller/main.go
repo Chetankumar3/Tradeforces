@@ -679,6 +679,10 @@ func deletePodIfExists(ctx context.Context, client kubernetes.Interface, namespa
 }
 
 func deleteServiceIfExists(ctx context.Context, client kubernetes.Interface, namespace, name string) error {
+	if debugEnabled {
+		log.Printf("DEBUG_MODE enabled, skipping deletion of service %s", name)
+		return nil
+	}
 	err := client.CoreV1().Services(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if apierrors.IsNotFound(err) {
 		return nil
@@ -717,6 +721,10 @@ func waitForPodDeletion(
 	namespace string,
 	podName string,
 ) error {
+	if debugEnabled {
+		log.Printf("DEBUG_MODE enabled, skipping wait for deletion of pod %s", podName)
+		return nil
+	}
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()

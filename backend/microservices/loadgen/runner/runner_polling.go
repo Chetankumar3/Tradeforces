@@ -56,11 +56,19 @@ type phase struct {
 	RPS             float64 `json:"rps"`
 }
 
+type phaseMetrics struct {
+    PhaseName      string  `json:"phase_name"`
+    DurationSecs   int     `json:"duration_secs"`
+    RequestsPerSec []int64 `json:"requests_per_sec"`
+    TotalRequests  int64   `json:"total_requests"`
+}
+
 type runStats struct {
-	sent    atomic.Int64
-	success atomic.Int64
-	failed  atomic.Int64
-	dropped atomic.Int64
+    sent    atomic.Int64
+    success atomic.Int64
+    failed  atomic.Int64
+    dropped atomic.Int64
+    phases  []phaseMetrics // NEW: track metrics per phase
 }
 
 type tickGate struct {
@@ -211,7 +219,9 @@ func run(ctx context.Context, cfg config) error {
 	}
 	defer writer.Close()
 
-	stats := &runStats{}
+	stats := &runStats{
+		phases: make([]phaseMetrics, 0),
+	}
 
 	// metrics goroutine can stay the same
 
@@ -300,8 +310,8 @@ func waitForControllerStart(ctx context.Context, cfg config) (time.Time, error) 
 
 func postReady(ctx context.Context, cfg config) error {
 	payload := readyRequest{
-		RunID:    cfg.RunID,
-		RunnerID: cfg.RunnerID,
+		RunID:    cfg.RunID
+		RunnerID: cfg.RunnerID
 	}
 	return postJSON(ctx, cfg.ControllerURL+"/ready", payload, nil)
 }
@@ -347,13 +357,14 @@ func postResults(cfg config, stats *runStats) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	payload := resultRequest{
-		RunID:    cfg.RunID,
-		RunnerID: cfg.RunnerID,
-		Sent:     stats.sent.Load(),
-		Success:  stats.success.Load(),
-		Failed:   stats.failed.Load(),
-		Dropped:  stats.dropped.Load(),
+	payload := map[string]any{
+		"run_id":    cfg.RunID
+		"runner_id": cfg.RunnerID
+		"sent":      stats.sent.Load()
+		"success":   stats.success.Load()
+		"failed":    stats.failed.Load()
+		"dropped":   stats.dropped.Load()
+		"phases":    stats.phases,
 	}
 
 	return postJSON(ctx, cfg.ControllerURL+"/results", payload, nil)
@@ -494,13 +505,13 @@ func (g *tickGate) snapshot() phaseSnapshot {
 	defer g.mu.RUnlock()
 
 	return phaseSnapshot{
-		generation:  g.generation,
-		phaseActive: g.phaseActive,
-		runDone:     g.runDone,
-		activeBots:  g.activeBots,
-		phaseStart:  g.phaseStart,
-		phaseEnd:    g.phaseEnd,
-		perBotRPS:   g.perBotRPS,
+		generation:  g.generation
+		phaseActive: g.phaseActive
+		runDone:     g.runDone
+		activeBots:  g.activeBots
+		phaseStart:  g.phaseStart
+		phaseEnd:    g.phaseEnd
+		perBotRPS:   g.perBotRPS
 	}
 }
 
@@ -567,8 +578,7 @@ func (b *bot) run(ctx context.Context, gate *tickGate) {
 	}
 }
 
-// runPhases executes the configured ramp. Each phase has one local scheduler
-// clock per pod, and the bots poll their own quotas instead of being woken up.
+// runPhases executes the configured ramp. Track per-second metrics for each phase.
 func runPhases(ctx context.Context, cfg config, gate *tickGate, stats *runStats) error {
 	for _, p := range cfg.Phases {
 		active := min(p.ActiveBots, cfg.BotsPerPod)
@@ -596,7 +606,7 @@ func runPhases(ctx context.Context, cfg config, gate *tickGate, stats *runStats)
 		gate.startPhase(p, active, bucketCap)
 
 		start := time.Now()
-		minted := runPhase(ctx, p, active, tick, gate, stats)
+		requestsPerSec := runPhaseWithMetrics(ctx, p, active, tick, gate, stats)
 
 		remaining := gate.remainingTokens()
 
@@ -610,11 +620,8 @@ func runPhases(ctx context.Context, cfg config, gate *tickGate, stats *runStats)
 		achievedRPS := float64(phaseSent) / maxFloat(duration, 0.001)
 
 		log.Printf(
-			"PHASE END name=%s minted=%d remaining=%d consumed=%d sent=%d success=%d failed=%d dropped=%d achieved_rps=%.2f cpu=%.2f%%",
+			"PHASE END name=%s sent=%d success=%d failed=%d dropped=%d achieved_rps=%.2f cpu=%.2f%%",
 			p.Name,
-			minted,
-			remaining,
-			minted-remaining,
 			phaseSent,
 			phaseSuccess,
 			phaseFailed,
@@ -622,6 +629,15 @@ func runPhases(ctx context.Context, cfg config, gate *tickGate, stats *runStats)
 			achievedRPS,
 			getCPUUsage(),
 		)
+
+		// Store phase metrics
+		metrics := phaseMetrics{
+			PhaseName:      p.Name
+			DurationSecs:   p.DurationSeconds
+			RequestsPerSec: requestsPerSec
+			TotalRequests:  phaseSent
+		}
+		stats.phases = append(stats.phases, metrics)
 
 		select {
 		case <-ctx.Done():
@@ -633,48 +649,66 @@ func runPhases(ctx context.Context, cfg config, gate *tickGate, stats *runStats)
 	return nil
 }
 
-// runPhase refills the phase bucket every scheduler tick and lets bots poll for
-// their own quotas independently.
-func runPhase(
-	ctx context.Context,
-	p phase,
-	activeBots int,
-	tick time.Duration,
-	gate *tickGate,
-	stats *runStats,
-) int64 {
-	if p.DurationSeconds <= 0 || activeBots <= 0 {
-		return 0
-	}
+// runPhaseWithMetrics tracks requests per second during the phase
+func runPhaseWithMetrics(
+    ctx context.Context,
+    p phase,
+    activeBots int,
+    tick time.Duration,
+    gate *tickGate,
+    stats *runStats,
+) []int64 {
+    if p.DurationSeconds <= 0 || activeBots <= 0 {
+        return []int64{}
+    }
 
-	start := time.Now()
-	deadline := time.NewTimer(time.Duration(p.DurationSeconds) * time.Second)
-	defer deadline.Stop()
+    start := time.Now()
+    deadline := time.NewTimer(time.Duration(p.DurationSeconds) * time.Second)
+    defer deadline.Stop()
 
-	ticker := time.NewTicker(tick)
-	defer ticker.Stop()
+    // Track requests per second
+    requestsPerSec := make([]int64, p.DurationSeconds)
+    secondTicker := time.NewTicker(time.Second)
+    defer secondTicker.Stop()
 
-	var minted int64
-	for {
-		select {
-		case <-ctx.Done():
-			return minted
-		case <-deadline.C:
-			return minted
-		case <-ticker.C:
-			elapsed := time.Since(start).Seconds()
-			expected := int64(math.Floor(elapsed * p.RPS))
-			missing := expected - minted
-			if missing <= 0 {
-				continue
-			}
+    mainTicker := time.NewTicker(tick)
+    defer mainTicker.Stop()
 
-			normalPerTick := int64(math.Ceil(p.RPS * tick.Seconds()))
-			toAdd := minInt64(missing, maxInt64(1, normalPerTick*2))
-			gate.publishTick(activeBots, toAdd)
-			minted += toAdd
-		}
-	}
+    var minted int64
+    var currentSecond int
+    var secondStartSent int64
+
+    for {
+        select {
+        case <-ctx.Done():
+            return requestsPerSec
+        case <-deadline.C:
+            // Record final second
+            if currentSecond < len(requestsPerSec) {
+                requestsPerSec[currentSecond] = stats.sent.Load() - secondStartSent
+            }
+            return requestsPerSec
+        case <-secondTicker.C:
+            // Record requests sent in the last second
+            if currentSecond < len(requestsPerSec) {
+                requestsPerSec[currentSecond] = stats.sent.Load() - secondStartSent
+                secondStartSent = stats.sent.Load()
+            }
+            currentSecond++
+        case <-mainTicker.C:
+            elapsed := time.Since(start).Seconds()
+            expected := int64(math.Floor(elapsed * p.RPS))
+            missing := expected - minted
+            if missing <= 0 {
+                continue
+            }
+
+            normalPerTick := int64(math.Ceil(p.RPS * tick.Seconds()))
+            toAdd := minInt64(missing, maxInt64(1, normalPerTick*2))
+            gate.publishTick(activeBots, toAdd)
+            minted += toAdd
+        }
+    }
 }
 
 // schedulerTick targets roughly 10% of the phase RPS per scheduler wakeup, as
@@ -874,20 +908,20 @@ func (b *bot) planLimit() requestPlan {
 	quantity := b.randomQuantity()
 
 	b.openOrders = append(b.openOrders, openOrder{
-		OrderID:  orderID,
-		Side:     side,
-		Symbol:   symbol,
-		Price:    price,
-		Quantity: quantity,
+		OrderID:  orderID
+		Side:     side
+		Symbol:   symbol
+		Price:    price
+		Quantity: quantity
 	})
 
 	return requestPlan{
-		orderID:   orderID,
-		orderType: "LIMIT",
-		side:      side,
-		symbol:    symbol,
-		price:     price,
-		quantity:  quantity,
+		orderID:   orderID
+		orderType: "LIMIT"
+		side:      side
+		symbol:    symbol
+		price:     price
+		quantity:  quantity
 	}
 }
 
@@ -897,11 +931,11 @@ func (b *bot) planMarket() requestPlan {
 	quantity := b.randomQuantity()
 
 	return requestPlan{
-		orderID:   b.newOrderID(),
-		orderType: "MARKET",
-		side:      side,
-		symbol:    symbol,
-		quantity:  quantity,
+		orderID:   b.newOrderID()
+		orderType: "MARKET"
+		side:      side
+		symbol:    symbol
+		quantity:  quantity
 	}
 }
 
@@ -912,14 +946,14 @@ func (b *bot) planCancel() requestPlan {
 
 	cancelOrderID := b.newOrderID()
 	return requestPlan{
-		orderID:       cancelOrderID,
-		orderType:     "CANCEL",
-		side:          order.Side,
-		symbol:        order.Symbol,
-		price:         order.Price,
-		quantity:      order.Quantity,
-		origClOrdID:   order.OrderID,
-		cancelOrderID: cancelOrderID,
+		orderID:       cancelOrderID
+		orderType:     "CANCEL"
+		side:          order.Side
+		symbol:        order.Symbol
+		price:         order.Price
+		quantity:      order.Quantity
+		origClOrdID:   order.OrderID
+		cancelOrderID: cancelOrderID
 	}
 }
 
@@ -1034,10 +1068,10 @@ func loadPhases(botsPerPod int) ([]phase, error) {
 	// rps := getenvFloat("TARGET_RPS_PER_POD", float64(activeBots))
 
 	return normalizePhases([]phase{{
-		Name:            "steady",
-		DurationSeconds: 20,
-		ActiveBots:      100,
-		RPS:             50000,
+		Name:            "steady"
+		DurationSeconds: 20
+		ActiveBots:      100
+		RPS:             50000
 	}}, botsPerPod)
 }
 

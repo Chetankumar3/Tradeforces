@@ -676,7 +676,7 @@ func runPhaseWithMetrics(
 
     var minted int64
     var currentSecond int
-    var secondStartSent int64
+    var secondStartSent int64 = stats.sent.Load()
 
     for {
         select {
@@ -691,8 +691,9 @@ func runPhaseWithMetrics(
         case <-secondTicker.C:
             // Record requests sent in the last second
             if currentSecond < len(requestsPerSec) {
-                requestsPerSec[currentSecond] = stats.sent.Load() - secondStartSent
-                secondStartSent = stats.sent.Load()
+                currentSent := stats.sent.Load()
+                requestsPerSec[currentSecond] = currentSent - secondStartSent
+                secondStartSent = currentSent
             }
             currentSecond++
         case <-mainTicker.C:

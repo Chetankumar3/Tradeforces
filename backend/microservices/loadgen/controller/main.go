@@ -655,10 +655,10 @@ func checkSchedulableCapacity(ctx context.Context, cfg config, client kubernetes
 }
 
 func deleteJobIfExists(ctx context.Context, client kubernetes.Interface, namespace, name string) error {
-	if debugEnabled {
-		log.Printf("DEBUG_MODE enabled, skipping deletion of job %s", name)
-		return nil
-	}
+	// if debugEnabled {
+	// 	log.Printf("DEBUG_MODE enabled, skipping deletion of job %s", name)
+	// 	return nil
+	// }
 	propagation := metav1.DeletePropagationBackground
 	err := client.BatchV1().Jobs(namespace).Delete(ctx, name, metav1.DeleteOptions{PropagationPolicy: &propagation})
 	if apierrors.IsNotFound(err) {

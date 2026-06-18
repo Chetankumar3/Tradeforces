@@ -85,12 +85,20 @@ type startResponse struct {
 }
 
 type resultRequest struct {
-	RunID    string `json:"run_id"`
-	RunnerID string `json:"runner_id"`
-	Sent     int64  `json:"sent"`
-	Success  int64  `json:"success"`
-	Failed   int64  `json:"failed"`
-	Dropped  int64  `json:"dropped"`
+	RunID    string        `json:"run_id"`
+	RunnerID string        `json:"runner_id"`
+	Sent     int64         `json:"sent"`
+	Success  int64         `json:"success"`
+	Failed   int64         `json:"failed"`
+	Dropped  int64         `json:"dropped"`
+	Phases   []phaseResult `json:"phases,omitempty"`
+}
+
+type phaseResult struct {
+	PhaseName      string  `json:"phase_name"`
+	DurationSecs   int     `json:"duration_secs"`
+	RequestsPerSec []int64 `json:"requests_per_sec"`
+	TotalRequests  int64   `json:"total_requests"`
 }
 
 type runState struct {
@@ -281,6 +289,13 @@ func newHTTPServer(cfg config, state *runState) *http.Server {
 		}
 
 		count := state.markResult(req)
+
+		// Log phase metrics as JSON if available
+		if len(req.Phases) > 0 {
+			phaseJSON, _ := json.MarshalIndent(req.Phases, "", "  ")
+			log.Printf("runner phase metrics run_id=%s runner_id=%s phases=%s", req.RunID, req.RunnerID, string(phaseJSON))
+		}
+
 		log.Printf("runner result run_id=%s runner_id=%s sent=%d success=%d failed=%d dropped=%d results=%d/%d",
 			req.RunID, req.RunnerID, req.Sent, req.Success, req.Failed, req.Dropped, count, cfg.RunnerPods)
 		writeJSON(w, http.StatusOK, map[string]any{"status": "accepted", "results": count})

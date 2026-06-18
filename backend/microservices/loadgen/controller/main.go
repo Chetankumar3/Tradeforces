@@ -290,10 +290,10 @@ func newHTTPServer(cfg config, state *runState) *http.Server {
 
 		count := state.markResult(req)
 
-		// Log phase metrics as JSON if available
+		// Log phase metrics as JSON for each pod
 		if len(req.Phases) > 0 {
 			phaseJSON, _ := json.MarshalIndent(req.Phases, "", "  ")
-			log.Printf("runner phase metrics run_id=%s runner_id=%s phases=%s", req.RunID, req.RunnerID, string(phaseJSON))
+			log.Printf("runner phase metrics run_id=%s runner_id=%s\n%s", req.RunID, req.RunnerID, string(phaseJSON))
 		}
 
 		log.Printf("runner result run_id=%s runner_id=%s sent=%d success=%d failed=%d dropped=%d results=%d/%d",
